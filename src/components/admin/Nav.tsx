@@ -8,7 +8,7 @@ export const NAV = [
   { href: "/admin/agenda", label: "Agenda", short: "Agenda", icon: IconCalendar, mobile: true },
   { href: "/admin/marcacoes", label: "Marcações", short: "Marcações", icon: IconList, mobile: true },
   { href: "/admin/clientes", label: "Clientes", short: "Clientes", icon: IconUsers, mobile: true },
-  { href: "/admin/servicos", label: "Serviços e Equipa", short: "Serviços", icon: IconBottle },
+  { href: "/admin/servicos", label: "Serviços e preços", short: "Serviços", icon: IconBottle },
   { href: "/admin/site", label: "O Meu Site", short: "Site", icon: IconImage },
   { href: "/admin/relatorios", label: "Relatórios", short: "Relatórios", icon: IconChart },
   { href: "/admin/notificacoes", label: "Notificações", short: "Avisos", icon: IconBell },

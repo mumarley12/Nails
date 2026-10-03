@@ -2,6 +2,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../src/db/schema";
+import { eq } from "drizzle-orm";
 
 type DB = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -18,9 +19,10 @@ await db.insert(schema.closedDays).values([
   { date: "2026-12-25", label: "Natal" },
 ]).onConflictDoNothing();
 
-const [matilde] = await db.insert(schema.staff).values([
-  { name: "Matilde", role: "Nail designer", tags: ["Gel", "Francesinha", "Nail art", "Pés"], workDays: [1, 2, 3, 4, 5, 6], startMin: 540, endMin: 1140, sortOrder: 1 },
-]).returning();
+// A migração 0006 já cria a ficha da Matilde; só se cria aqui se faltar.
+const [existingOwner] = await db.select().from(schema.staff).limit(1);
+const matilde = existingOwner ?? (await db.insert(schema.staff).values({ name: "Matilde", role: "Nail designer", workDays: [0, 1, 2, 3, 4, 5, 6], startMin: 0, endMin: 1440, sortOrder: 1 }).returning())[0];
+await db.update(schema.staff).set({ name: "Matilde", role: "Nail designer", tags: ["Gel", "Francesinha", "Nail art", "Pés"] }).where(eq(schema.staff.id, matilde.id));
 
 // Preços a 0 aparecem como "sob consulta" até a Matilde os pôr no painel.
 const svc = await db.insert(schema.services).values([

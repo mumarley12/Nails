@@ -1,12 +1,12 @@
 # Luxe Nails by MVN — site, marcações online e painel
 
-Site da Matilde (Luxe Nails, Agualva-Cacém), marcação online pensada para telemóvel e painel privado para gerir agenda, clientes, serviços, equipa, fotos e relatórios.
+Site da Matilde (Luxe Nails, Agualva-Cacém), marcação online pensada para telemóvel e painel privado para gerir agenda, clientes, serviços, fotos e relatórios.
 
 - **Site público** (`/`): serviços, portefólio a passar sozinho, preços, opiniões, contactos e WhatsApp.
-- **Marcação online** (`/marcar`): serviço → técnica → dia → hora → dados. Sem criar conta.
+- **Marcação online** (`/marcar`): serviço → dia → hora → dados. Sem criar conta.
 - **Link privado da cliente** (`/m/…`): ver, remarcar, cancelar e adicionar ao calendário.
-- **Painel** (`/admin`): visão geral, agenda (dia/semana), marcações, clientes, serviços e equipa, “O Meu Site” (logótipo, fotos, contactos, horário, opiniões), notificações e relatórios.
-- **Avisos**: email para a cliente (confirmação + lembrete na véspera), email e notificação no telemóvel para o salão a cada marcação nova. **SMS em pausa** (pode ligar mais tarde).
+- **Painel** (`/admin`): visão geral, agenda (dia/semana), marcações, clientes, serviços e preços, “O Meu Site” (logótipo, fotos, contactos, horário, opiniões), notificações e relatórios.
+- **Avisos**: email para a cliente (confirmação + lembrete na véspera), email e notificação no telemóvel para a Matilde a cada marcação nova. **SMS em pausa** (pode ligar mais tarde).
 
 Tudo em português de Portugal, preços em euros, fuso horário de Lisboa.
 
@@ -31,7 +31,7 @@ Em cada publicação, o comando de build (`netlify.toml`) aplica as migrações,
 | `NEXT_PUBLIC_SITE_URL` | endereço público do site, sem barra no fim |
 | `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | primeiro acesso ao painel — no 1.º login o painel pede uma password nova (muda-se depois em **A minha conta**) |
 | `CRON_SECRET` | protege o envio dos lembretes |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | avisos no telemóvel da equipa |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | avisos no telemóvel da Matilde |
 | `RESEND_API_KEY` / `EMAIL_FROM` | emails (opcional até configurar a [Resend](https://resend.com)) |
 
 ### Avisos no telemóvel da manicure
@@ -82,7 +82,7 @@ tests/                   testes
 ```
 
 **Regras importantes**
-- **Sem marcações duplicadas:** a base de dados tem uma restrição `EXCLUDE` (btree_gist) que impede duas marcações ativas sobrepostas para a mesma técnica, mesmo com pedidos em simultâneo.
+- **Sem marcações duplicadas:** a base de dados tem uma restrição `EXCLUDE` (btree_gist) que impede duas marcações ativas sobrepostas na agenda, mesmo com pedidos em simultâneo.
 - **Preço nunca vem do browser:** o servidor lê preço e duração da tabela de serviços.
 - **Datas:** tudo guardado em UTC e mostrado em Europe/Lisbon (mudança de hora tratada).
 - **Segurança:** painel com sessão assinada (cookie httpOnly), passwords com bcrypt, limites de tentativas, links privados das clientes guardados só como hash, validação com Zod, segredos apenas no servidor.

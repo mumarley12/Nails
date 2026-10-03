@@ -32,7 +32,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHead title="O Meu Site" sub={<>Logótipo, fotos, contactos, horário e opiniões. Serviços, preços e equipa estão em <Link href="/admin/servicos" className="underline">Serviços e Equipa</Link>.</>}
+      <PageHead title="O Meu Site" sub={<>Logótipo, fotos, contactos, horário e opiniões. Serviços e preços estão em <Link href="/admin/servicos" className="underline">Serviços e preços</Link>.</>}
         actions={<Link href="/" target="_blank" className="btn-outline h-11 px-4">Ver site</Link>} />
       <Flash ok={sp.ok} error={sp.erro} />
 
@@ -127,7 +127,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
                 <label className="sr-only" htmlFor={`he-${w}`}>Fecha</label><input id={`he-${w}`} type="time" name={`end-${w}`} defaultValue={t(h.endMin)} className="field h-10 w-28" />
               </div>
             ); })}
-            <p className="mt-2 text-xs text-ink-muted">Desmarque o dia para o salão estar fechado. As horas de cada técnica estão em Serviços e Equipa.</p>
+            <p className="mt-2 text-xs text-ink-muted">Desmarque o dia para estar fechado. Para almoço, férias ou uma ausência, use «Bloquear horário» na Agenda.</p>
             <SubmitButton className="btn-primary mt-3 h-11 self-start px-6">Guardar horário</SubmitButton>
           </form>
           <div>

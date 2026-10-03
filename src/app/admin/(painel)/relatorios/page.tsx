@@ -20,7 +20,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const r = await report(from, to);
   const max = Math.max(1, ...r.byDay.map((d) => d.revenue));
   const topMax = Math.max(1, ...r.topServices.map((t) => t.n));
-  const staffMax = Math.max(1, ...r.byStaff.map((t) => t.cents));
   const retPct = r.clients ? Math.round((r.returning / r.clients) * 100) : 0;
   const tabs = [["hoje", "Hoje"], ["semana", "Esta semana"], ["mes", "Este mês"], ["custom", "Personalizado"]];
 
@@ -79,15 +78,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
             ))}
           </ul>
         </Card>
-        <Card title="Por técnica e tipo de cliente">
-          <ul className="flex flex-col gap-3 p-5">
-            {r.byStaff.map((t) => (
-              <li key={t.name} className="grid grid-cols-[80px_1fr_70px] items-center gap-3 text-[13px]" title={`${t.name} · ${euro(t.cents)} · ${t.n} marcações`}>
-                <span>{t.name}</span><span className="h-3.5 rounded-r bg-[#F2F2F2]"><span className="block h-full rounded-r bg-brand" style={{ width: `${(t.cents / staffMax) * 100}%` }} /></span><b className="text-right tabular-nums">{euro(t.cents)}</b>
-              </li>
-            ))}
-          </ul>
-          <div className="px-5 pb-5">
+        <Card title="Tipo de cliente">
+          <div className="p-5">
             <p className="mb-2 text-[13px] font-bold">Novas vs. habituais</p>
             <div className="flex h-4 gap-0.5" role="img" aria-label={`${retPct}% habituais, ${100 - retPct}% novas`}>
               <span className="rounded-l bg-brand-text" style={{ width: `${retPct}%` }} /><span className="rounded-r bg-[#D6D6D6]" style={{ width: `${100 - retPct}%` }} />

@@ -47,7 +47,6 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
   const addOn = opts?.addOns.find((s) => s.id === addOnId) ?? null;
   const price = (svc?.priceCents ?? 0) + (addOn?.priceCents ?? 0);
   const dur = (svc?.durationMin ?? 0) + (addOn?.durationMin ?? 0);
-  const techs = useMemo(() => (opts && svc ? opts.staff.filter((t) => t.serviceIds.includes(svc.id)) : []), [opts, svc]);
   const addOnsForSvc = useMemo(() => (opts?.addOns ?? []).filter(() => !!svc), [opts, svc]);
 
   const qs = useCallback((extra: Record<string, string>) => {
@@ -84,6 +83,7 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
 
   const canNext = [!!svc, true, !!day, startMin !== null, true][step];
   const firstStep = resched ? 2 : 0;
+  const shownSteps = [0, 2, 3, 4].filter((i) => i >= firstStep && (!resched || i < 4));
 
   async function submit() {
     setTried(true);
@@ -114,7 +114,7 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
   function next() {
     setError("");
     if (step === 3 && resched) return void submit();
-    if (step < 4) setStep(step + 1);
+    if (step < 4) setStep(step === 0 ? 2 : step + 1); // só há uma nail designer: sem passo "Técnica"
     else submit();
   }
 
@@ -153,17 +153,17 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
   return (
     <Shell>
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-line px-1.5">
-        <button type="button" onClick={() => { setError(""); setStep(Math.max(firstStep, step - 1)); }} disabled={step === firstStep} aria-label="Passo anterior" className="grid h-11 w-11 place-items-center disabled:opacity-30"><IconBack size={20} /></button>
+        <button type="button" onClick={() => { setError(""); setStep(Math.max(firstStep, step === 2 ? 0 : step - 1)); }} disabled={step === firstStep} aria-label="Passo anterior" className="grid h-11 w-11 place-items-center disabled:opacity-30"><IconBack size={20} /></button>
         <span className="font-serif text-lg">{resched ? "Alterar Marcação" : "Fazer Marcação"}</span>
         <Link href={resched ? `/m/${rescheduleToken}` : "/"} aria-label="Fechar" className="grid h-11 w-11 place-items-center"><IconClose size={20} /></Link>
       </header>
       <div className="shrink-0 px-5 pt-3.5">
         <div className="flex justify-between text-[11px] font-bold tracking-[0.16em] text-brand-text">
-          <span>PASSO {step - firstStep + 1} DE {5 - firstStep - (resched ? 1 : 0)}</span>
+          <span>PASSO {shownSteps.indexOf(step) + 1} DE {shownSteps.length}</span>
           <span className="font-semibold tracking-[0.08em] text-[#8A8A8A]">{STEPS[step]}</span>
         </div>
         <div className="mt-2.5 flex gap-1" aria-hidden="true">
-          {STEPS.slice(firstStep, resched ? 4 : 5).map((_, i) => <span key={i} className={`h-[3px] flex-1 rounded-full ${i + firstStep <= step ? "bg-brand" : "bg-[#E7E7E7]"}`} />)}
+          {shownSteps.map((i) => <span key={i} className={`h-[3px] flex-1 rounded-full ${i <= step ? "bg-brand" : "bg-[#E7E7E7]"}`} />)}
         </div>
         <h1 className="mt-4 font-serif text-[28px] font-medium leading-tight">{TITLES[step]}</h1>
       </div>
@@ -195,15 +195,6 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
           </div>
         )}
 
-        {opts && step === 1 && (
-          <div className="flex flex-col gap-2 animate-in">
-            <Choice selected={staffId === "any"} onClick={() => { setStaffId("any"); setDay(null); setStartMin(null); }} title="Qualquer Técnica" sub="Primeira hora livre com qualquer técnica" avatar="∗" />
-            {techs.map((t) => (
-              <Choice key={t.id} selected={staffId === t.id} onClick={() => { setStaffId(t.id); setDay(null); setStartMin(null); }} title={t.name.split(" ")[0]} sub={t.tags.join(", ") || t.role} avatar={t.name.charAt(0)} photo={t.photoUrl} />
-            ))}
-          </div>
-        )}
-
         {step === 2 && (
           <div className="animate-in">
             {!days ? <Loading /> : (
@@ -223,7 +214,7 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
                     );
                   })}
                 </div>
-                {days.every((d) => d.free === 0) && <Empty text="Não há horas livres nas próximas semanas com esta escolha. Experimente “Qualquer Técnica” ou fale connosco." />}
+                {days.every((d) => d.free === 0) && <Empty text="Não há horas livres nas próximas semanas com esta escolha. Fale comigo pelo WhatsApp." />}
               </>
             )}
           </div>

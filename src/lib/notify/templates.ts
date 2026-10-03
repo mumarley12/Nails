@@ -18,7 +18,7 @@ function layout(title: string, intro: string, a: ApptView, extra = "") {
 <h1 style="font-family:Georgia,serif;font-weight:500;font-size:26px;margin:0 0 8px">${esc(title)}</h1>
 <p style="font-size:15px;line-height:1.55;color:#444;margin:0 0 16px">${intro}</p>
 <table style="width:100%;border-collapse:collapse;border-top:1px solid #eee">
-${row("Serviço", a.serviceName)}${row("Técnica", a.staffName)}${row("Dia", a.dateLabel)}${row("Hora", `${a.timeLabel} – ${a.endLabel}`)}${row("Preço", a.priceLabel + " · pagamento no salão")}${row("Morada", a.address)}
+${row("Serviço", a.serviceName)}${row("Dia", a.dateLabel)}${row("Hora", `${a.timeLabel} – ${a.endLabel}`)}${row("Preço", a.priceLabel + " · pagamento no salão")}${row("Morada", a.address)}
 </table>
 <div style="margin-top:16px">${a.icsUrl ? btn(a.icsUrl, "ADICIONAR AO CALENDÁRIO", true) : ""}${a.manageUrl ? btn(a.manageUrl, "ALTERAR OU CANCELAR") : ""}${a.whatsappUrl ? btn(a.whatsappUrl, "WHATSAPP") : ""}</div>
 ${extra}

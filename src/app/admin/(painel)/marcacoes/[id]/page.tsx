@@ -78,7 +78,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
       <Card>
         <dl className="divide-y divide-[#F2F2F2] px-5 text-sm">
-          {[["Telemóvel", prettyPhone(a.customer.phone)], ["Email", a.customer.email ?? "—"], ["Serviço", a.service.name + (a.addOn ? " + " + a.addOn.name : "")], ["Técnica", a.staff.name], ["Dia", longDate(key)], ["Hora", `${timeOf(a.startAt)} – ${timeOf(a.endAt)}`], ["Preço", euro(a.priceCents)]].map(([k, v]) => (
+          {[["Telemóvel", prettyPhone(a.customer.phone)], ["Email", a.customer.email ?? "—"], ["Serviço", a.service.name + (a.addOn ? " + " + a.addOn.name : "")], ["Dia", longDate(key)], ["Hora", `${timeOf(a.startAt)} – ${timeOf(a.endAt)}`], ["Preço", euro(a.priceCents)]].map(([k, v]) => (
             <div key={k} className="flex justify-between gap-4 py-3"><dt className="text-ink-muted">{k}</dt><dd className="m-0 text-right font-semibold">{v}</dd></div>
           ))}
         </dl>

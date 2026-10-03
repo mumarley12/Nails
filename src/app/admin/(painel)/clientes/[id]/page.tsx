@@ -68,7 +68,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
             {history.length === 0 && <li className="px-5 py-6 text-sm text-ink-muted">Sem marcações.</li>}
             {history.map((a) => (
               <li key={a.id}><Link href={`/admin/marcacoes/${a.id}`} className="flex items-center justify-between gap-3 px-5 py-3 text-[13px] hover:bg-brand-soft">
-                <span><b className="block">{a.service.name}{a.addOn ? " + " + a.addOn.name : ""}</b><span className="text-ink-muted">{shortDate(dateKey(a.startAt))}, {timeOf(a.startAt)} · {a.staff.name.split(" ")[0]}</span></span>
+                <span><b className="block">{a.service.name}{a.addOn ? " + " + a.addOn.name : ""}</b><span className="text-ink-muted">{shortDate(dateKey(a.startAt))}, {timeOf(a.startAt)}</span></span>
                 <span className="flex flex-col items-end gap-1"><b>{euro(a.priceCents)}</b><StatusPill status={a.status} /></span>
               </Link></li>
             ))}

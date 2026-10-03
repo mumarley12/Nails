@@ -39,7 +39,7 @@ export default async function Page() {
                 <li key={a.id}>
                   <Link href={`/admin/marcacoes/${a.id}`} className={`flex items-center gap-3 border-b border-[#F5F5F5] px-5 py-3 hover:bg-brand-soft ${a.status === "COMPLETED" || a.status === "CANCELLED" ? "opacity-60" : ""}`}>
                     <span className="w-14 shrink-0 text-[13px] font-bold">{timeOf(a.startAt)}</span>
-                    <span className="min-w-0 flex-1"><b className="block truncate text-sm">{a.customer.name}</b><span className="block truncate text-xs text-ink-muted">{a.service.name}{a.addOn ? " + " + a.addOn.name : ""} · {a.staff.name.split(" ")[0]}</span></span>
+                    <span className="min-w-0 flex-1"><b className="block truncate text-sm">{a.customer.name}</b><span className="block truncate text-xs text-ink-muted">{a.service.name}{a.addOn ? " + " + a.addOn.name : ""}</span></span>
                     <StatusPill status={a.status} />
                   </Link>
                 </li>
@@ -67,21 +67,6 @@ export default async function Page() {
                 </li>
               )}
               {d.pending.length === 0 && d.tomorrow.length === 0 && <li className="text-ink-muted">Está tudo em dia.</li>}
-            </ul>
-          </Card>
-          <Card title="Equipa hoje">
-            <ul className="flex flex-col gap-3 p-5">
-              {d.staff.map((p) => {
-                const works = p.workDays.includes(wd);
-                const n = d.live.filter((a) => a.staffId === p.id).length;
-                return (
-                  <li key={p.id} className="flex items-center gap-3 text-[13px]">
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#D3D3D3] font-serif">{p.name.charAt(0)}</span>
-                    <span className="flex-1"><b className="block">{p.name.split(" ")[0]}</b><span className="text-ink-muted">{works ? `${hhmm(p.startMin)} – ${hhmm(p.endMin)}` : "Folga"}</span></span>
-                    <span className="text-xs text-ink-soft">{n} marcações</span>
-                  </li>
-                );
-              })}
             </ul>
           </Card>
         </div>

@@ -34,7 +34,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
                 <Link href={`/admin/marcacoes/${a.id}`} className="grid grid-cols-[64px_1fr_auto] items-center gap-3 px-4 py-3 hover:bg-brand-soft md:grid-cols-[110px_1.3fr_1fr_90px_auto] md:px-5">
                   <span className="text-[13px] font-bold leading-tight">{shortDate(dateKey(a.startAt)).replace(/ \d{4}$/, "")}<span className="block font-normal text-ink-muted">{timeOf(a.startAt)}</span></span>
                   <span className="min-w-0"><b className="block truncate text-sm">{a.customer.name}</b><span className="block truncate text-xs text-ink-muted">{prettyPhone(a.customer.phone)}</span></span>
-                  <span className="hidden min-w-0 truncate text-[13px] md:block">{a.service.name}{a.addOn ? " + " + a.addOn.name : ""}<span className="block text-xs text-ink-muted">{a.staff.name.split(" ")[0]}</span></span>
+                  <span className="hidden min-w-0 truncate text-[13px] md:block">{a.service.name}{a.addOn ? " + " + a.addOn.name : ""}</span>
                   <span className="hidden text-right text-[13px] font-semibold md:block">{euro(a.priceCents)}</span>
                   <StatusPill status={a.status} />
                 </Link>

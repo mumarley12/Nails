@@ -46,7 +46,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const emailReady = !!process.env.RESEND_API_KEY;
   return (
     <div className="flex flex-col gap-6">
-      <PageHead title="Notificações" sub="Como as clientes recebem a confirmação e como a equipa sabe das marcações novas." />
+      <PageHead title="Notificações" sub="Como as clientes recebem a confirmação e como fica a saber das marcações novas." />
       <Flash ok={sp.ok} error={sp.erro} />
       <div role="status" className="rounded-card border border-[#DFDFDF] bg-brand-soft px-4 py-3.5 text-sm leading-relaxed"><b>SMS em pausa — sem custos.</b> As marcações funcionam na mesma: confirmação no ecrã e por email, calendário e WhatsApp.</div>
       {!emailReady && <p className="rounded-card bg-warn-bg px-4 py-3 text-sm text-warn-fg">Os emails ainda não estão ligados: falta a chave <code>RESEND_API_KEY</code> (ver README).</p>}
