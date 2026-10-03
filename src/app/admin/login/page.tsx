@@ -21,7 +21,7 @@ async function login(formData: FormData) {
   const ok = await bcrypt.compare(password, u?.passwordHash ?? "$2b$12$E2HIvsGkWlm9AFXPUcjoE.dYGWN0f2rO48NbD.iBGGZ1OME.UexRy");
   if (!u || !ok) redirect("/admin/login?erro=1");
   (await cookies()).set(SESSION_COOKIE, await signSession(u.id), sessionCookieOptions);
-  redirect("/admin");
+  redirect(u.mustChangePassword ? "/admin/conta?primeira=1" : "/admin");
 }
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {

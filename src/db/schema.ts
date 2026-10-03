@@ -22,6 +22,8 @@ export const adminUsers = pgTable("admin_users", {
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull(),
+  /** true = tem de escolher uma password nova no próximo login (ex.: password inicial) */
+  mustChangePassword: boolean("must_change_password").notNull().default(false),
   ...stamps,
 });
 

@@ -17,7 +17,7 @@ async function logout() {
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [admin, s] = await Promise.all([requireAdmin(), getSettings()]);
+  const [admin, s] = await Promise.all([requireAdmin({ allowPasswordChange: true }), getSettings()]);
   return (
     <div className="min-h-dvh bg-[#F8F8F8] lg:flex">
       <aside className="sticky top-0 hidden h-dvh w-[240px] shrink-0 flex-col gap-6 border-r border-line bg-white px-4 py-6 lg:flex">
@@ -28,7 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <SideNav />
         <div className="mt-auto flex items-center gap-2.5 border-t border-[#F0F0F0] px-2 pt-3">
           <span className="grid h-9 w-9 place-items-center rounded-full bg-[#D3D3D3] font-serif">{admin.name.charAt(0)}</span>
-          <span className="min-w-0 flex-1 text-[13px] leading-tight"><b className="block truncate">{admin.name}</b><span className="text-ink-muted">Proprietária</span></span>
+          <Link href="/admin/conta" className="min-w-0 flex-1 text-[13px] leading-tight hover:underline"><b className="block truncate">{admin.name}</b><span className="text-ink-muted">A minha conta</span></Link>
           <form action={logout}><button type="submit" className="text-xs font-semibold text-ink-muted underline">Sair</button></form>
         </div>
       </aside>

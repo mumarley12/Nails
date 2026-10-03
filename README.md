@@ -29,7 +29,7 @@ Em cada publicação, o comando de build (`netlify.toml`) aplica as migrações,
 | `DIRECT_URL` | ligação à Supabase pelo *session pooler* (porta 5432), usada nas migrações |
 | `AUTH_SECRET` | assinatura da sessão do painel (32+ caracteres) |
 | `NEXT_PUBLIC_SITE_URL` | endereço público do site, sem barra no fim |
-| `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | primeiro acesso ao painel (password com 10+ caracteres) |
+| `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | primeiro acesso ao painel — no 1.º login o painel pede uma password nova (muda-se depois em **A minha conta**) |
 | `CRON_SECRET` | protege o envio dos lembretes |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | avisos no telemóvel da equipa |
 | `RESEND_API_KEY` / `EMAIL_FROM` | emails (opcional até configurar a [Resend](https://resend.com)) |

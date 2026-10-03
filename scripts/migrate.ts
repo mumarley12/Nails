@@ -22,11 +22,12 @@ if (await seedIfEmpty(db)) console.log("✓ Dados iniciais criados (serviços, e
 const admins = await db.select({ id: schema.adminUsers.id }).from(schema.adminUsers).limit(1);
 const email = process.env.ADMIN_EMAIL, password = process.env.ADMIN_PASSWORD;
 if (!admins.length) {
-  if (email && password && password.length >= 10) {
-    await db.insert(schema.adminUsers).values({ email: email.toLowerCase(), name: process.env.ADMIN_NAME || "Proprietária", passwordHash: await bcrypt.hash(password, 12) });
-    console.log(`✓ Acesso ao painel criado para ${email}`);
+  if (email && password && password.length >= 6) {
+    // Password inicial: no primeiro login o painel pede para escolher uma nova.
+    await db.insert(schema.adminUsers).values({ email: email.toLowerCase(), name: process.env.ADMIN_NAME || "Proprietária", passwordHash: await bcrypt.hash(password, 12), mustChangePassword: true });
+    console.log(`✓ Acesso ao painel criado para ${email} (vai pedir password nova no primeiro login)`);
   } else {
-    console.warn("! Ainda não há acesso ao painel: defina ADMIN_EMAIL e ADMIN_PASSWORD (10+ caracteres) e publique de novo.");
+    console.warn("! Ainda não há acesso ao painel: defina ADMIN_EMAIL e ADMIN_PASSWORD e publique de novo.");
   }
 }
 await client.end();
