@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { IconClose, IconMenu } from "@/components/icons";
 
 const NAV = [
-  ["#portefolio", "Portefólio"], ["#menu", "Preços"], ["#sobre", "Sobre mim"], ["#contactos", "Contactos"],
+  ["#horario", "Horário semanal"], ["#menu", "Serviços"], ["#portefolio", "Clientes"], ["#opinioes", "Feedbacks"], ["#contactos", "Contactos"],
 ] as const;
 
 /** Logótipo: a imagem do painel, se houver; senão o nome em letra. */
@@ -13,8 +13,8 @@ export function Logo({ name, logoUrl }: { name: string; logoUrl?: string | null;
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={logoUrl} alt={name} className="h-10 w-auto max-w-[180px] object-contain" />;
   }
-  const short = name.replace(/\s+by\s+/i, " · ").toUpperCase();
-  return <span className="font-serif text-[20px] tracking-[0.06em] text-cream md:text-[22px]">{short.split(" · ").map((p, i) => <span key={i}>{i > 0 && <span className="text-brand"> · </span>}{p}</span>)}</span>;
+  const short = name.replace(/\s+by\s+.*$/i, "").toUpperCase(); // "Luxe Nails by MVN" → "LUXE NAILS"
+  return <span className="font-serif text-[20px] tracking-[0.06em] text-cream md:text-[22px]">{short}</span>;
 }
 
 export function Header({ name, logoUrl }: { name: string; logoUrl?: string | null; city?: string }) {

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/bodoni-moda/opsz.css";
-import "@fontsource-variable/bodoni-moda/opsz-italic.css";
+import "@fontsource/marcellus/400.css";
 import "@fontsource/jost/300.css";
 import "@fontsource/jost/400.css";
 import "@fontsource/jost/500.css";

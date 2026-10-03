@@ -43,7 +43,7 @@ export function Gallery({ items }: { items: Item[] }) {
   if (!items.length) return null;
   return (
     <div ref={ref} onMouseEnter={hold} onMouseLeave={go} onTouchStart={hold} onTouchEnd={goLater} onScroll={onScroll}
-      tabIndex={0} aria-label="Portefólio — deslize para ver mais" className="no-scrollbar overflow-x-auto overflow-y-hidden">
+      tabIndex={0} aria-label="Unhas de clientes — deslize para ver mais" className="no-scrollbar overflow-x-auto overflow-y-hidden">
       <div className="flex w-max">
         {loop.map((g, i) => (
           <figure key={g.id + i} aria-hidden={i >= items.length} className={`relative m-0 mr-2 shrink-0 overflow-hidden md:mr-3 ${i % 3 === 0 ? "h-[300px] w-[225px] md:h-[440px] md:w-[330px]" : "h-[300px] w-[180px] md:h-[440px] md:w-[264px]"}`}>

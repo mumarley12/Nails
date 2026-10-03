@@ -12,12 +12,7 @@ const existing = await db.select().from(schema.services).limit(1);
 if (existing.length) return false;
 
 await db.insert(schema.siteSettings).values({ id: 1 }).onConflictDoNothing();
-await db.insert(schema.businessHours).values([0, 1, 2, 3, 4, 5, 6].map((w) => ({ weekday: w, open: w !== 6, startMin: 540, endMin: 1140 }))).onConflictDoNothing();
-await db.insert(schema.closedDays).values([
-  { date: "2026-10-05", label: "Implantação da República" },
-  { date: "2026-12-08", label: "Imaculada Conceição" },
-  { date: "2026-12-25", label: "Natal" },
-]).onConflictDoNothing();
+await db.insert(schema.businessHours).values([0, 1, 2, 3, 4, 5, 6].map((w) => ({ weekday: w, open: w === 5, startMin: 540, endMin: 1140 }))).onConflictDoNothing();
 
 // A migração 0006 já cria a ficha da Matilde; só se cria aqui se faltar.
 const [existingOwner] = await db.select().from(schema.staff).limit(1);

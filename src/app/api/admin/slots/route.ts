@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     const q = new URL(req.url).searchParams;
     const slots = await getSlots({
       day: daySchema.parse(q.get("day")), serviceId: idSchema.parse(q.get("service")),
-      addOnId: q.get("addon") || null, staffId: q.get("staff") || "any", excludeAppointmentId: q.get("exclude") || undefined, leadMin: 0,
+      addOnId: q.get("addon") || null, staffId: q.get("staff") || "any", excludeAppointmentId: q.get("exclude") || undefined, leadMin: 0, anyTime: true,
     });
     return NextResponse.json({ slots });
   } catch (e) {

@@ -7,26 +7,21 @@ import { getSettings } from "@/lib/settings";
 import { dateKey, hhmm, shortDate, DIAS } from "@/lib/time";
 import { Card, Flash, PageHead, Switch } from "@/components/admin/ui";
 import { SubmitButton } from "@/components/admin/SubmitButton";
-import { addGallery, closedDay, editGallery, review, saveHours, saveInfo, saveTexts, uploadSlot } from "./actions";
+import { addGallery, editGallery, review, saveInfo, saveTexts, uploadSlot } from "./actions";
 
 export const metadata = { title: "O Meu Site" };
-const t = (m: number) => hhmm(m).padStart(5, "0");
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireAdmin();
   const sp = await searchParams;
-  const [s, gallery, hours, closed, reviews] = await Promise.all([
+  const [s, gallery, reviews] = await Promise.all([
     getSettings(),
     db.select().from(schema.galleryPhotos).orderBy(asc(schema.galleryPhotos.sortOrder), asc(schema.galleryPhotos.createdAt)),
-    db.select().from(schema.businessHours).orderBy(asc(schema.businessHours.weekday)),
-    db.select().from(schema.closedDays).orderBy(asc(schema.closedDays.date)),
     db.select().from(schema.reviews).orderBy(desc(schema.reviews.date)),
   ]);
-  const H = (w: number) => hours.find((h) => h.weekday === w) ?? { weekday: w, open: w !== 6, startMin: 540, endMin: 1140 };
   const slots = [
     ["logo", "Logótipo", "Topo e rodapé (PNG com fundo transparente)", s.logoUrl],
     ["hero", "Foto principal", "Topo do site, ao lado do título", s.heroPhotoUrl],
-    ["about", "Foto do salão", "Secção “Sobre nós”", s.aboutPhotoUrl],
     ["promo", "Foto da promoção", "Faixa escura da oferta", s.promoPhotoUrl],
   ] as const;
 
@@ -73,11 +68,11 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
                     <label className="sr-only" htmlFor={`gl-${g.id}`}>Legenda</label>
                     <input id={`gl-${g.id}`} name="label" defaultValue={g.label} placeholder="Legenda" className="field h-9 text-xs" />
                     <div className="grid grid-cols-4 gap-1">
-                      <button name="action" value="left" aria-label="Mover para a esquerda" className="h-9 rounded-btn border border-line">‹</button>
-                      <button name="action" value="save" className="col-span-2 h-9 rounded-btn border border-line text-[11px] font-bold">Guardar</button>
-                      <button name="action" value="right" aria-label="Mover para a direita" className="h-9 rounded-btn border border-line">›</button>
+                      <button name="op" value="left" aria-label="Mover para a esquerda" className="h-9 rounded-btn border border-line">‹</button>
+                      <button name="op" value="save" className="col-span-2 h-9 rounded-btn border border-line text-[11px] font-bold">Guardar</button>
+                      <button name="op" value="right" aria-label="Mover para a direita" className="h-9 rounded-btn border border-line">›</button>
                     </div>
-                    <button name="action" value="delete" className="h-8 text-[11px] font-bold text-bad-fg underline">Remover</button>
+                    <button name="op" value="delete" className="h-8 text-[11px] font-bold text-bad-fg underline">Remover</button>
                   </form>
                 </li>
               ))}
@@ -101,10 +96,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           <form id="textos" action={saveTexts} className="flex flex-col gap-3.5 p-5">
             <div className="grid grid-cols-2 gap-3">
               <div><label className="label" htmlFor="t1">Título</label><input id="t1" name="heroTitle" defaultValue={s.heroTitle} className="field" /></div>
-              <div><label className="label" htmlFor="t2">Título (2.ª linha, itálico)</label><input id="t2" name="heroTitleAccent" defaultValue={s.heroTitleAccent} className="field" /></div>
+              <div><label className="label" htmlFor="t2">Título (2.ª linha, a dourado)</label><input id="t2" name="heroTitleAccent" defaultValue={s.heroTitleAccent} className="field" /></div>
             </div>
             <div><label className="label" htmlFor="t3">Frase por baixo do título</label><textarea id="t3" name="heroSubtitle" rows={2} defaultValue={s.heroSubtitle} className="field h-auto py-2" /></div>
-            <div><label className="label" htmlFor="t4">Texto “Sobre nós”</label><textarea id="t4" name="aboutText" rows={3} defaultValue={s.aboutText} className="field h-auto py-2" /></div>
             <div className="border-t border-[#F0F0F0] pt-1"><Switch name="promoActive" defaultChecked={s.promoActive} label="Faixa de promoção" hint="A faixa escura com a oferta." /></div>
             <div className="grid grid-cols-3 gap-3">
               <div><label className="label" htmlFor="t5">Título</label><input id="t5" name="promoTitle" defaultValue={s.promoTitle} className="field" /></div>
@@ -116,60 +110,28 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
         </Card>
       </div>
 
-      <Card title="Horário do salão">
-        <div id="horario" className="grid gap-6 p-5 lg:grid-cols-2">
-          <form action={saveHours} className="flex flex-col">
-            {Array.from({ length: 7 }, (_, w) => { const h = H(w); return (
-              <div key={w} className="flex flex-wrap items-center gap-3 border-b border-[#F2F2F2] py-2.5">
-                <label className="flex w-36 items-center gap-2.5 text-sm font-semibold"><input type="checkbox" name={`open-${w}`} defaultChecked={h.open} className="h-5 w-5 accent-[#6B6B6B]" />{DIAS[w].replace(/^./, (c) => c.toUpperCase())}</label>
-                <label className="sr-only" htmlFor={`hs-${w}`}>Abre</label><input id={`hs-${w}`} type="time" name={`start-${w}`} defaultValue={t(h.startMin)} className="field h-10 w-28" />
-                <span className="text-sm text-ink-muted">às</span>
-                <label className="sr-only" htmlFor={`he-${w}`}>Fecha</label><input id={`he-${w}`} type="time" name={`end-${w}`} defaultValue={t(h.endMin)} className="field h-10 w-28" />
-              </div>
-            ); })}
-            <p className="mt-2 text-xs text-ink-muted">Desmarque o dia para estar fechado. Para almoço, férias ou uma ausência, use «Bloquear horário» na Agenda.</p>
-            <SubmitButton className="btn-primary mt-3 h-11 self-start px-6">Guardar horário</SubmitButton>
-          </form>
-          <div>
-            <h3 className="text-sm font-bold">Dias fechados (feriados, férias)</h3>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {closed.map((c) => (
-                <li key={c.id}><form action={closedDay} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#F2F2F2] pl-3.5 pr-1 text-[13px]">
-                  <input type="hidden" name="id" value={c.id} />{shortDate(c.date)} · {c.label}
-                  <button aria-label={`Remover ${c.label}`} className="grid h-7 w-7 place-items-center rounded-full text-base hover:bg-white">×</button></form></li>
-              ))}
-              {closed.length === 0 && <li className="text-sm text-ink-muted">Nenhum.</li>}
-            </ul>
-            <form action={closedDay} className="mt-4 flex flex-wrap items-end gap-2.5">
-              <div><label className="label" htmlFor="cd-date">Dia</label><input id="cd-date" type="date" name="date" required className="field w-auto" /></div>
-              <div><label className="label" htmlFor="cd-label">Motivo</label><input id="cd-label" name="label" placeholder="Feriado" className="field w-40" /></div>
-              <SubmitButton className="btn-outline h-11 px-4">Adicionar</SubmitButton>
-            </form>
-          </div>
+      <Card title="Horário">
+        <div id="horario" className="flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
+          <span className="text-ink-muted">As horas para marcar publicam-se semana a semana em <b className="text-ink">Horário semanal</b>.</span>
+          <Link href="/admin/horario" className="btn-outline h-10 px-4">Abrir horário semanal</Link>
         </div>
       </Card>
 
-      <Card title="Opiniões de clientes" action={<span className="text-xs text-ink-muted">As mais recentes aparecem primeiro</span>}>
+      <Card title="Feedbacks" action={<span className="text-xs text-ink-muted">Os mais recentes aparecem primeiro</span>}>
         <div id="opinioes" className="p-5">
-          <p className="mb-4 text-[13px] text-ink-muted">Peça autorização à cliente antes de publicar a opinião dela.</p>
+          <p className="mb-4 text-[13px] text-ink-muted">As clientes deixam o feedback no site. Fica escondido até carregar em «Publicar».</p>
           <ul className="divide-y divide-[#F2F2F2]">
+            {reviews.length === 0 && <li className="py-3 text-sm text-ink-muted">Ainda não há feedbacks.</li>}
             {reviews.map((r) => (
-              <li key={r.id} className={`flex flex-wrap items-start gap-3 py-3 ${r.visible ? "" : "opacity-50"}`}>
-                <div className="min-w-0 flex-1"><b className="text-sm">{r.name}</b> <span className="text-[13px] text-ink-muted">· {r.city} · {shortDate(dateKey(r.date))}</span><p className="mt-0.5 text-[13px] text-[#333]">“{r.text}”</p></div>
-                <form action={review} className="flex gap-3"><input type="hidden" name="id" value={r.id} />
-                  <button name="action" value="toggle" className="text-xs font-bold underline">{r.visible ? "Esconder" : "Mostrar"}</button>
-                  <button name="action" value="delete" className="text-xs font-bold text-bad-fg underline">Apagar</button></form>
+              <li key={r.id} className="flex flex-wrap items-start gap-3 py-3">
+                <div className="min-w-0 flex-1"><b className="text-sm">{r.name}</b> <span className="text-[13px] text-brand-text" aria-label={`${r.rating} de 5 estrelas`}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>{!r.visible && <span className="ml-2 rounded-full bg-warn-bg px-2 py-0.5 text-[10px] font-bold text-warn-fg">POR PUBLICAR</span>} <span className="text-[13px] text-ink-muted">· {[r.city, shortDate(dateKey(r.date))].filter(Boolean).join(" · ")}</span><p className="mt-0.5 text-[13px] text-[#333]">“{r.text}”</p></div>
+                <span className="flex gap-3">
+                  <form action={review}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="op" value="toggle" /><button className="text-xs font-bold underline">{r.visible ? "Esconder" : "Publicar"}</button></form>
+                  <form action={review}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="op" value="delete" /><button className="text-xs font-bold text-bad-fg underline">Apagar</button></form>
+                </span>
               </li>
             ))}
           </ul>
-          <form action={review} className="mt-4 grid gap-3 rounded-card bg-brand-soft p-4 sm:grid-cols-3">
-            <input type="hidden" name="action" value="add" />
-            <div><label className="label" htmlFor="r-name">Nome</label><input id="r-name" name="name" placeholder="ex.: Ana P." className="field" required /></div>
-            <div><label className="label" htmlFor="r-city">Localidade</label><input id="r-city" name="city" placeholder="ex.: Cacém" className="field" /></div>
-            <div><label className="label" htmlFor="r-date">Data</label><input id="r-date" name="date" type="date" defaultValue={dateKey(new Date())} className="field" /></div>
-            <div className="sm:col-span-3"><label className="label" htmlFor="r-text">O que a cliente disse</label><textarea id="r-text" name="text" rows={2} className="field h-auto py-2" required /></div>
-            <div className="sm:col-span-3"><SubmitButton className="btn-primary h-11 px-6">Adicionar opinião</SubmitButton></div>
-          </form>
         </div>
       </Card>
     </div>

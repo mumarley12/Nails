@@ -1,44 +1,61 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { IconBack, IconNext } from "@/components/icons";
+import { useEffect, useRef } from "react";
+import { Stars } from "./Stars";
 
-type R = { id: string; name: string; city: string; text: string; when: string };
+type R = { id: string; name: string; city: string; text: string; when: string; rating: number };
 
-/** Opiniões a passar sozinhas (6 s), mais recentes primeiro. Setas e deslizar com o dedo. */
+/**
+ * Feedbacks a passar sozinhos, como as fotos das clientes (o mais recente primeiro).
+ * Para quando a cliente toca ou passa o rato; dá para arrastar com o dedo.
+ */
 export function Testimonials({ items }: { items: R[] }) {
-  const [idx, setIdx] = useState(0);
-  const paused = useRef(false);
-  const tx = useRef<number | null>(null);
-  const max = items.length - 1;
+  const ref = useRef<HTMLDivElement>(null);
+  const st = useRef({ pos: 0, hold: false, auto: false, t: 0 as unknown as ReturnType<typeof setTimeout> });
+  const loop = items.length > 1 ? [...items, ...items] : items;
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || max < 1) return;
-    const t = setInterval(() => { if (!paused.current) setIdx((i) => (i >= max ? 0 : i + 1)); }, 6000);
-    return () => clearInterval(t);
-  }, [max]);
-  const step = (d: number) => setIdx((i) => { const n = i + d; return n > max ? 0 : n < 0 ? max : n; });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || items.length < 2) return;
+    let raf = 0;
+    const tick = () => {
+      const g = ref.current, s = st.current;
+      if (g && !s.hold) {
+        const half = g.scrollWidth / 2;
+        s.pos += 0.4;
+        if (half > 0 && s.pos >= half) s.pos -= half;
+        s.auto = true;
+        g.scrollLeft = s.pos;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); clearTimeout(st.current.t); };
+  }, [items.length]);
+
+  const hold = () => { clearTimeout(st.current.t); st.current.hold = true; };
+  const go = () => { if (ref.current) st.current.pos = ref.current.scrollLeft; st.current.hold = false; };
+  const goLater = () => { clearTimeout(st.current.t); st.current.t = setTimeout(go, 2500); };
+  const onScroll = () => {
+    const g = ref.current, s = st.current;
+    if (!g) return;
+    if (s.auto) { s.auto = false; return; }
+    const half = g.scrollWidth / 2;
+    if (items.length > 1 && half > 0 && g.scrollLeft >= half) g.scrollLeft -= half;
+    s.pos = g.scrollLeft;
+  };
 
   if (!items.length) return null;
   return (
-    <div onMouseEnter={() => (paused.current = true)} onMouseLeave={() => (paused.current = false)}
-      onTouchStart={(e) => { tx.current = e.touches[0]?.clientX ?? null; paused.current = true; }}
-      onTouchEnd={(e) => { const t = e.changedTouches[0]; if (tx.current != null && t) { const dx = t.clientX - tx.current; if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1); } tx.current = null; paused.current = false; }}
-      aria-roledescription="carrossel" aria-label="Opiniões de clientes" className="overflow-hidden">
-      <div className="flex transition-transform duration-700 ease-out motion-reduce:transition-none" style={{ transform: `translateX(${-idx * 100}%)` }}>
-        {items.map((r, i) => (
-          <figure key={r.id} aria-hidden={i !== idx} className="m-0 w-full shrink-0">
-            <blockquote className="font-serif text-[24px] italic leading-[1.35] text-cream md:text-[34px]">“{r.text}”</blockquote>
-            <figcaption className="mt-5 text-[12px] uppercase tracking-[0.22em] text-night-muted">{[r.name, r.city, r.when].filter(Boolean).join(" · ")}</figcaption>
+    <div ref={ref} onMouseEnter={hold} onMouseLeave={go} onTouchStart={hold} onTouchEnd={goLater} onScroll={onScroll}
+      tabIndex={0} aria-label="Feedbacks de clientes — deslize para ver mais" className="no-scrollbar overflow-x-auto overflow-y-hidden">
+      <div className="flex w-max">
+        {loop.map((r, i) => (
+          <figure key={r.id + i} aria-hidden={i >= items.length} className="m-0 mr-3 flex w-[280px] shrink-0 flex-col border border-night-line px-6 py-6 md:w-[380px] md:px-8 md:py-8">
+            <Stars value={r.rating} className="mb-4 text-brand" />
+            <blockquote className="font-serif text-[19px] leading-[1.4] text-cream md:text-[22px]">“{r.text}”</blockquote>
+            <figcaption className="mt-auto pt-6 text-[12px] uppercase tracking-[0.22em] text-night-muted">{[r.name, r.city, r.when].filter(Boolean).join(" · ")}</figcaption>
           </figure>
         ))}
       </div>
-      {max > 0 && (
-        <div className="mt-8 flex items-center gap-4">
-          <button type="button" onClick={() => step(-1)} aria-label="Opinião anterior" className="grid h-11 w-11 place-items-center border border-night-line text-cream hover:border-brand"><IconBack size={16} /></button>
-          <span className="text-[12px] tracking-[0.2em] text-night-muted">{idx + 1} / {max + 1}</span>
-          <button type="button" onClick={() => step(1)} aria-label="Opinião seguinte" className="grid h-11 w-11 place-items-center border border-night-line text-cream hover:border-brand"><IconNext size={16} /></button>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IconBack, IconCalendar, IconCheck, IconClose, IconWhatsApp } from "@/components/icons";
 import { euro } from "@/lib/money";
 import { addDays, dateKey, DIAS_CURTOS, hhmm, longDate, MESES, weekdayOf } from "@/lib/time";
@@ -10,15 +10,17 @@ type Tech = { id: string; name: string; role: string; photoUrl: string | null; t
 type Options = { services: Svc[]; addOns: Svc[]; staff: Tech[]; salon: { name: string; address: string; whatsapp: string | null } };
 type Day = { day: string; free: number; closed: boolean };
 
+const MESES_CURTOS = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 const STEPS = ["Serviço", "Técnica", "Dia", "Hora", "Dados"] as const;
-const TITLES = ["Escolha o Serviço", "Escolha a Técnica", "Escolha o Dia", "Escolha a Hora", "Os Seus Dados"];
+const TITLES = ["Escolha o Serviço", "Escolha a Técnica", "Escolha o Dia", "Escolha a Vaga", "Os Seus Dados"];
 
 function prettyPhoneInput(v: string) {
   const x = v.replace(/\D/g, "").slice(0, 9);
   return x.length < 4 ? x : x.length < 7 ? `${x.slice(0, 3)} ${x.slice(3)}` : `${x.slice(0, 3)} ${x.slice(3, 6)} ${x.slice(6)}`;
 }
 
-export function BookingWizard({ initialServiceId, rescheduleToken }: { initialServiceId: string | null; rescheduleToken: string | null }) {
+export function BookingWizard({ initialServiceId, rescheduleToken, initialDay = null, initialStart = null }: { initialServiceId: string | null; rescheduleToken: string | null; initialDay?: string | null; initialStart?: number | null }) {
+  const wanted = useRef<{ day: string | null; start: number | null }>({ day: initialDay, start: initialStart });
   const resched = !!rescheduleToken;
   const [opts, setOpts] = useState<Options | null>(null);
   const [loadErr, setLoadErr] = useState("");
@@ -72,7 +74,11 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
     setSlots(null);
     fetch(`/api/booking/slots?${qs({ day })}`).then((r) => r.json()).then((d) => {
       if (d.error) { setError(d.error); return; }
-      setSlots(d.slots.map((s: { startMin: number }) => s.startMin));
+      const list: number[] = d.slots.map((s: { startMin: number }) => s.startMin);
+      setSlots(list);
+      // Veio de uma vaga do site: se ainda está livre, escolhe-a e passa aos dados.
+      const w = wanted.current;
+      if (w.day === day && w.start !== null) { wanted.current = { day: null, start: null }; if (list.includes(w.start)) { setStartMin(w.start); setStep(4); } }
     }).catch(() => setError("Sem ligação. Tente de novo."));
   }, [step, day, qs]);
 
@@ -114,6 +120,7 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
   function next() {
     setError("");
     if (step === 3 && resched) return void submit();
+    if (step === 0 && wanted.current.day) { setDay(wanted.current.day); setStep(3); return; } // veio de uma vaga do site
     if (step < 4) setStep(step === 0 ? 2 : step + 1); // só há uma nail designer: sem passo "Técnica"
     else submit();
   }
@@ -199,22 +206,22 @@ export function BookingWizard({ initialServiceId, rescheduleToken }: { initialSe
           <div className="animate-in">
             {!days ? <Loading /> : (
               <>
-                <div className="grid grid-cols-4 gap-2">
-                  {days.map((d) => {
-                    const wd = weekdayOf(d.day), sel = day === d.day, today = d.day === dateKey(new Date()), tomorrow = d.day === addDays(dateKey(new Date()), 1);
-                    const sub = d.closed ? "Fechado" : d.free === 0 ? (wd === 6 ? "Fechado" : "Lotado") : today ? "Hoje" : tomorrow ? "Amanhã" : `${d.free} livres`;
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {days.filter((d) => !d.closed).map((d) => {
+                    const wd = weekdayOf(d.day), sel = day === d.day;
+                    const sub = d.closed ? "Sem vagas" : d.free === 0 ? "Esgotado" : `${d.free} ${d.free === 1 ? "vaga" : "vagas"}`;
                     return (
                       <button key={d.day} type="button" disabled={d.free === 0} aria-pressed={sel} aria-label={`${longDate(d.day)}, ${sub}`}
                         onClick={() => { setDay(d.day); setStartMin(null); }}
                         className={`flex h-[78px] flex-col items-center justify-center gap-0.5 rounded-card border transition ${sel ? "border-brand bg-brand" : d.free === 0 ? "border-line bg-[#F7F7F7] text-[#9A9A9A]" : "border-[#E2E2E2] bg-white hover:border-brand-text"}`}>
-                        <span className="text-[11px] font-bold tracking-[0.1em]">{DIAS_CURTOS[wd]}</span>
+                        <span className="text-[11px] font-bold tracking-[0.1em]">{DIAS_CURTOS[wd]} · {MESES_CURTOS[Number(d.day.slice(5, 7)) - 1]}</span>
                         <span className="font-serif text-[22px] leading-none">{Number(d.day.slice(8))}</span>
                         <span className={`text-[10.5px] font-semibold ${sel ? "" : d.free === 0 ? "" : "text-brand-text"}`}>{sub}</span>
                       </button>
                     );
                   })}
                 </div>
-                {days.every((d) => d.free === 0) && <Empty text="Não há horas livres nas próximas semanas com esta escolha. Fale comigo pelo WhatsApp." />}
+                {days.every((d) => d.free === 0) && <Empty text="Ainda não há vagas publicadas. As vagas da próxima semana saem ao sábado — ou fale comigo pelo WhatsApp." />}
               </>
             )}
           </div>

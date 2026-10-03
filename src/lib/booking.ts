@@ -1,8 +1,9 @@
 import "server-only";
+import { revalidateTag } from "next/cache";
 import { and, asc, eq, gte, inArray, lt, ne, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { computeSlots, type Slot, type StaffAvail } from "./availability";
-import { addDays, zonedToUtc } from "./time";
+import { addDays, dateKey, zonedToUtc } from "./time";
 import { newToken, hashToken } from "./token";
 import { notifyAppointment } from "./notify";
 
@@ -11,6 +12,9 @@ export class BookingError extends Error {
 }
 
 const ACTIVE = ["PENDING", "CONFIRMED"] as const;
+
+/** As vagas livres do site mudam quando alguém marca, remarca ou cancela. */
+function refreshPublic() { try { revalidateTag("public"); } catch { /* fora de um pedido (scripts) */ } }
 
 /** Serviço principal + extra opcional, com preço e duração lidos SEMPRE da base de dados. */
 export async function resolveService(serviceId: string, addOnId?: string | null) {
@@ -43,18 +47,30 @@ async function busyBetween(fromDay: string, toDayExclusive: string, excludeAppoi
 }
 
 export async function availabilityContext() {
-  const [staff, hours, closed] = await Promise.all([
+  const [staff, hours, rows] = await Promise.all([
     staffForAvailability(),
     db.select().from(schema.businessHours),
-    db.select({ date: schema.closedDays.date }).from(schema.closedDays),
+    db.select({ date: schema.vagas.date, startMin: schema.vagas.startMin }).from(schema.vagas).where(gte(schema.vagas.date, addDays(dateKey(new Date()), -1))),
   ]);
-  return { staff, hours, closedDays: closed.map((c) => c.date) };
+  // Só contam as vagas publicadas pela Matilde (horas exatas). Feriados não bloqueiam.
+  const vagas: Record<string, number[]> = {};
+  for (const r of rows) (vagas[r.date] ??= []).push(r.startMin);
+  return { staff, hours, closedDays: [] as string[], vagas };
 }
 
-export async function getSlots(p: { day: string; serviceId: string; addOnId?: string | null; staffId: string | "any"; excludeAppointmentId?: string; leadMin?: number }): Promise<Slot[]> {
+/** No painel a Matilde pode marcar a qualquer hora (ex.: cliente que ligou), sem precisar de vaga. */
+const ANY_TIME_HOURS = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, open: true, startMin: 7 * 60, endMin: 22 * 60 }));
+
+export async function getSlots(p: { day: string; serviceId: string; addOnId?: string | null; staffId: string | "any"; excludeAppointmentId?: string; leadMin?: number; anyTime?: boolean }): Promise<Slot[]> {
   const { durationMin } = await resolveService(p.serviceId, p.addOnId);
   const ctx = await availabilityContext();
   const busy = await busyBetween(p.day, addDays(p.day, 1), p.excludeAppointmentId);
+  if (p.anyTime) {
+    const free = computeSlots({ ...ctx, vagas: undefined, hours: ANY_TIME_HOURS, day: p.day, serviceId: p.serviceId, durationMin, staffId: p.staffId, busy, now: new Date(), leadMin: 0, stepMin: 15 });
+    // As vagas publicadas aparecem sempre, mesmo fora das 7h–22h.
+    const extra = computeSlots({ ...ctx, day: p.day, serviceId: p.serviceId, durationMin, staffId: p.staffId, busy, now: new Date(), leadMin: 0 });
+    return [...free, ...extra.filter((x) => !free.some((f) => f.startMin === x.startMin))].sort((a, b) => a.startMin - b.startMin);
+  }
   return computeSlots({ ...ctx, day: p.day, serviceId: p.serviceId, durationMin, staffId: p.staffId, busy, now: new Date(), leadMin: p.leadMin });
 }
 
@@ -66,7 +82,7 @@ export async function getDaySummary(p: { fromDay: string; days: number; serviceI
   const now = new Date();
   return Array.from({ length: p.days }, (_, i) => {
     const day = addDays(p.fromDay, i);
-    const closed = ctx.closedDays.includes(day);
+    const closed = !(ctx.vagas[day]?.length);
     const free = closed ? 0 : computeSlots({ ...ctx, day, serviceId: p.serviceId, durationMin, staffId: p.staffId, busy, now }).length;
     return { day, free, closed };
   });
@@ -95,7 +111,7 @@ export type NewBooking = {
 
 export async function createBooking(b: NewBooking): Promise<{ id: string; token: string }> {
   const { svc, addOn, durationMin, priceCents } = await resolveService(b.serviceId, b.addOnId);
-  const slots = await getSlots({ day: b.day, serviceId: svc.id, addOnId: addOn?.id, staffId: b.staffId, leadMin: b.source === "ADMIN" ? 0 : undefined });
+  const slots = await getSlots({ day: b.day, serviceId: svc.id, addOnId: addOn?.id, staffId: b.staffId, leadMin: b.source === "ADMIN" ? 0 : undefined, anyTime: b.source === "ADMIN" });
   const slot = slots.find((s) => s.startMin === b.startMin);
   if (!slot) throw new BookingError("SLOT_TAKEN", "Essa hora acabou de ser ocupada. Escolha outra, por favor.");
   const staffId = await pickStaff(slot.staffIds, b.day);
@@ -115,6 +131,7 @@ export async function createBooking(b: NewBooking): Promise<{ id: string; token:
       }).returning({ id: schema.appointments.id });
       return appt.id;
     });
+    refreshPublic();
     await notifyAppointment(id, "BOOKED", { token, byClient: (b.source ?? "ONLINE") === "ONLINE" });
     return { id, token };
   } catch (e) {
@@ -137,7 +154,7 @@ export async function rescheduleAppointment(p: { id: string; day: string; startM
   if (!ACTIVE.includes(a.status as (typeof ACTIVE)[number])) throw new BookingError("INVALID", "Esta marcação já não está ativa.");
   if (p.byClient && a.startAt <= new Date()) throw new BookingError("TOO_LATE", "Esta marcação já passou.");
   const { durationMin } = await resolveService(a.serviceId, a.addOnId);
-  const slots = await getSlots({ day: p.day, serviceId: a.serviceId, addOnId: a.addOnId, staffId: p.staffId ?? a.staffId, excludeAppointmentId: a.id, leadMin: p.byClient ? undefined : 0 });
+  const slots = await getSlots({ day: p.day, serviceId: a.serviceId, addOnId: a.addOnId, staffId: p.staffId ?? a.staffId, excludeAppointmentId: a.id, leadMin: p.byClient ? undefined : 0, anyTime: !p.byClient });
   const slot = slots.find((s) => s.startMin === p.startMin);
   if (!slot) throw new BookingError("SLOT_TAKEN", "Essa hora já não está livre.");
   const staffId = slot.staffIds.includes(a.staffId) ? a.staffId : await pickStaff(slot.staffIds, p.day);
@@ -149,6 +166,7 @@ export async function rescheduleAppointment(p: { id: string; day: string; startM
     if (isOverlapError(e)) throw new BookingError("SLOT_TAKEN", "Essa hora já não está livre.");
     throw e;
   }
+  refreshPublic();
   const token = p.token ?? (await (await import("./notify")).rotateToken(a.id));
   await notifyAppointment(a.id, "RESCHEDULED", { token, byClient: p.byClient });
 }
@@ -156,6 +174,7 @@ export async function rescheduleAppointment(p: { id: string; day: string; startM
 export async function setAppointmentStatus(id: string, status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW", byClient = false) {
   const [a] = await db.update(schema.appointments).set({ status }).where(eq(schema.appointments.id, id)).returning();
   if (!a) throw new BookingError("NOT_FOUND", "Marcação não encontrada.");
+  refreshPublic();
   if (status === "CANCELLED") await notifyAppointment(id, "CANCELLED", { byClient });
   return a;
 }

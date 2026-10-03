@@ -9,6 +9,7 @@ import { addDays, dateKey, DIAS_CURTOS, isValidDateKey, longDate, minutesOfDay, 
 import { PageHead, StatusPill } from "@/components/admin/ui";
 import { SubmitButton } from "@/components/admin/SubmitButton";
 import { IconBack, IconNext } from "@/components/icons";
+import { fmtVaga } from "@/lib/vagas";
 
 export const metadata = { title: "Agenda" };
 const PX = 60; // px por hora
@@ -39,18 +40,19 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const start = view === "semana" ? addDays(day, -weekdayOf(day)) : day;
   const n = view === "semana" ? 7 : 1;
   const { from, to } = dayRange(start, n);
-  const [staff, appts, blocks, hours] = await Promise.all([
+  const [staff, appts, blocks, hours, dayVagas] = await Promise.all([
     db.select().from(schema.staff).where(eq(schema.staff.active, true)).orderBy(asc(schema.staff.sortOrder)),
     appointmentsBetween(from, to),
     db.select().from(schema.blockedTimes).where(and(gte(schema.blockedTimes.endAt, from), lt(schema.blockedTimes.startAt, to))),
     db.select().from(schema.businessHours),
+    db.select().from(schema.vagas).where(and(gte(schema.vagas.date, start), lt(schema.vagas.date, addDays(start, n)))).orderBy(asc(schema.vagas.startMin)),
   ]);
   const shown = staff.slice(0, 1);
-  const todayHours = hours.find((h) => h.weekday === weekdayOf(day));
-  const isOpen = !!todayHours?.open;
+  const todays = dayVagas.filter((v) => v.date === day).map((v) => v.startMin);
+  const isOpen = todays.length > 0;
   const tone = (id: string) => TONES[Math.max(0, staff.findIndex((p) => p.id === id)) % TONES.length];
-  const open = hours.filter((h) => h.open);
-  const dayStart = Math.min(...open.map((h) => h.startMin), 540), dayEnd = Math.max(...open.map((h) => h.endMin), 1140);
+  void hours;
+  const dayStart = Math.min(...todays, 540) - (Math.min(...todays, 540) % 60), dayEnd = Math.max(...todays.map((m) => m + 120), 1140);
   const q = (o: Record<string, string | undefined>) => "/admin/agenda?" + new URLSearchParams(Object.entries({ vista: view, dia: day, ...o }).filter(([, v]) => v) as [string, string][]).toString();
   const visible = appts.filter((a) => a.status !== "CANCELLED");
 
@@ -73,7 +75,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
         <div className="card overflow-x-auto">
           <div className="grid min-w-full" style={{ gridTemplateColumns: `52px repeat(${shown.length}, minmax(200px, 1fr))` }}>
             <div className="border-b border-line" />
-            {shown.map((p) => <div key={p.id} className="border-b border-l border-line px-3 py-2.5 text-sm font-bold">{isOpen && todayHours ? `Aberto ${hhmm(todayHours.startMin)}–${hhmm(todayHours.endMin)}` : "Fechado"}</div>)}
+            {shown.map((p) => <div key={p.id} className="border-b border-l border-line px-3 py-2.5 text-sm font-bold">{isOpen ? `Vagas: ${todays.map(fmtVaga).join(", ")}` : "Sem vagas"}<Link href="/admin/horario" className="ml-3 text-[12px] font-normal text-brand-text underline">mudar vagas</Link></div>)}
             <div className="relative" style={{ height: ((dayEnd - dayStart) / 60) * PX }}>
               {Array.from({ length: Math.ceil((dayEnd - dayStart) / 60) }, (_, i) => <span key={i} className="absolute right-2 text-[11px] text-[#8A8A8A]" style={{ top: i * PX + 2 }}>{(dayStart / 60 + i)}h</span>)}
             </div>

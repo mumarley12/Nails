@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { computeSlots, type SlotInput } from "@/lib/availability";
 import { zonedToUtc, weekdayOf, dateKey, minutesOfDay } from "@/lib/time";
 import { normalizePhone } from "@/lib/phone";
+import { canEditWeek, parseVagas, weekRules } from "@/lib/vagas";
 
 const hours = [0, 1, 2, 3, 4, 5, 6].map((w) => ({ weekday: w, open: w !== 6, startMin: 540, endMin: 1140 }));
 const sara = { id: "sara", workDays: [1, 2, 3, 4, 5], startMin: 540, endMin: 1080, active: true, serviceIds: ["gel"] };
@@ -55,9 +56,55 @@ describe("computeSlots", () => {
     const s = computeSlots({ ...base, now });
     expect(s[0].startMin).toBe(780); // 13:00 (11:40 + 60 min, arredondado ao passo)
   });
+  it("weekly schedule overrides the base hours (2 blocks)", () => {
+    const overrides = { "2026-10-09": { open: true, startMin: 540, endMin: 660, start2Min: 1080, end2Min: 1260 } };
+    const owner = { id: "matilde", workDays: [0, 1, 2, 3, 4, 5, 6], startMin: 0, endMin: 1440, active: true, serviceIds: ["gel"] };
+    const starts = computeSlots({ ...base, staff: [owner], overrides }).map((x) => x.startMin);
+    expect(starts).toContain(540);
+    expect(starts).not.toContain(720); // fora dos blocos
+    expect(starts).toContain(1080);
+    expect(starts.every((m) => (m >= 540 && m + 60 <= 660) || (m >= 1080 && m + 60 <= 1260))).toBe(true);
+  });
+  it("a closed day in the weekly schedule has no slots even if the base is open", () => {
+    const overrides = { "2026-10-09": { open: false, startMin: 540, endMin: 1140 } };
+    expect(computeSlots({ ...base, overrides })).toEqual([]);
+  });
   it("only offers technicians who do the service", () => {
     const s = computeSlots({ ...base, serviceId: "pedi" });
     expect(s.every((x) => x.staffIds.join() === "marta")).toBe(true);
+  });
+});
+
+describe("vagas", () => {
+  const owner = { id: "matilde", workDays: [0, 1, 2, 3, 4, 5, 6], startMin: 0, endMin: 1440, active: true, serviceIds: ["gel"] };
+  it("only offers the exact published times", () => {
+    const s = computeSlots({ ...base, staff: [owner], vagas: { "2026-10-09": [630, 870] } });
+    expect(s.map((x) => x.startMin)).toEqual([630, 870]);
+  });
+  it("no vagas → no slots, even if hours say open", () => {
+    expect(computeSlots({ ...base, staff: [owner], vagas: {} })).toEqual([]);
+  });
+  it("a booked vaga disappears (and a long service hides a vaga it would overlap)", () => {
+    const busy = [{ staffId: "matilde", start: zonedToUtc("2026-10-09", 630), end: zonedToUtc("2026-10-09", 750) }];
+    const s = computeSlots({ ...base, staff: [owner], vagas: { "2026-10-09": [630, 690, 870] }, busy });
+    expect(s.map((x) => x.startMin)).toEqual([870]);
+  });
+  it("parses what she writes", () => {
+    expect(parseVagas("10:30, 14:30")).toEqual({ ok: true, mins: [630, 870] });
+    expect(parseVagas("10h10 e 17h")).toEqual({ ok: true, mins: [610, 1020] });
+    expect(parseVagas("9 14.15")).toEqual({ ok: true, mins: [540, 855] });
+    expect(parseVagas("")).toEqual({ ok: true, mins: [] });
+    expect(parseVagas("10:30, amanhã").ok).toBe(false);
+    expect(parseVagas("25:00").ok).toBe(false);
+  });
+  it("next week opens 2 days before (Saturday)", () => {
+    // 2026-10-05 é segunda-feira
+    expect(canEditWeek("2026-10-05", "2026-10-07")).toBe(true); // semana atual, a meio
+    expect(canEditWeek("2026-10-12", "2026-10-09")).toBe(false); // sexta: próxima ainda fechada
+    expect(canEditWeek("2026-10-12", "2026-10-10")).toBe(true); // sábado: abre
+    expect(canEditWeek("2026-10-19", "2026-10-11")).toBe(false); // duas semanas à frente: nunca
+    expect(canEditWeek("2026-09-28", "2026-10-07")).toBe(false); // semana passada
+    expect(weekRules("2026-10-07").nextOpensOn).toBe("2026-10-10");
   });
 });
 

@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --font-serif: "Bodoni Moda Variable";
+  --font-serif: "Marcellus";
   --font-sans: "Jost";
 }
 
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { @apply bg-white text-ink font-sans antialiased; }
+/* A Marcellus não tem itálico: o destaque nos títulos é a cor dourada, não letra inclinada. */
+.font-serif em, .h-section em, h1 em, h2 em, .font-serif i { font-style: normal; }
 :focus-visible { outline: 2px solid #B8925A; outline-offset: 3px; }
 
 @layer components {

@@ -50,6 +50,41 @@
       "when": 1791000000002,
       "tag": "0006_uma_so_pessoa",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791000000003,
+      "tag": "0007_horario_semanal",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791000000004,
+      "tag": "0008_sem_feriados",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791000000005,
+      "tag": "0009_vagas",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791000000006,
+      "tag": "0010_estrelas",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791000000007,
+      "tag": "0011_feedbacks_exemplo",
+      "breakpoints": true
     }
   ]
 }

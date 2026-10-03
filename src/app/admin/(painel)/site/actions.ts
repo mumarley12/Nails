@@ -6,7 +6,7 @@ import { db, schema } from "@/db";
 import { requireAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { saveImage } from "@/lib/upload";
-import { isValidDateKey, parseHHMM } from "@/lib/time";
+import { isValidDateKey } from "@/lib/time";
 
 const back = (msg: string, anchor = "", err = false) => redirect(`/admin/site?${err ? "erro" : "ok"}=${encodeURIComponent(msg)}${anchor ? "#" + anchor : ""}`);
 const done = () => { revalidateTag("public"); revalidatePath("/"); revalidatePath("/admin/site"); };
@@ -27,7 +27,7 @@ export async function saveTexts(fd: FormData) {
   await getSettings();
   await db.update(schema.siteSettings).set({
     heroTitle: str(fd, "heroTitle", 60), heroTitleAccent: str(fd, "heroTitleAccent", 40), heroSubtitle: str(fd, "heroSubtitle", 240),
-    aboutText: str(fd, "aboutText", 600), promoActive: fd.get("promoActive") === "on", promoTitle: str(fd, "promoTitle", 60),
+    promoActive: fd.get("promoActive") === "on", promoTitle: str(fd, "promoTitle", 60),
     promoValue: str(fd, "promoValue", 12), promoText: str(fd, "promoText", 60),
   }).where(eq(schema.siteSettings.id, 1));
   done(); back("Textos guardados.", "textos");
@@ -70,7 +70,7 @@ export async function addGallery(fd: FormData) {
 
 export async function editGallery(fd: FormData) {
   await requireAdmin();
-  const id = String(fd.get("id")), action = String(fd.get("action"));
+  const id = String(fd.get("id")), action = String(fd.get("op"));
   if (action === "delete") {
     await db.delete(schema.galleryPhotos).where(eq(schema.galleryPhotos.id, id));
   } else if (action === "left" || action === "right") {
@@ -85,40 +85,12 @@ export async function editGallery(fd: FormData) {
   done(); back("Galeria atualizada.", "galeria");
 }
 
-export async function saveHours(fd: FormData) {
-  await requireAdmin();
-  for (let w = 0; w < 7; w++) {
-    const open = fd.get(`open-${w}`) === "on";
-    const s = parseHHMM(String(fd.get(`start-${w}`) ?? "09:00")) ?? 540, e = parseHHMM(String(fd.get(`end-${w}`) ?? "19:00")) ?? 1140;
-    if (open && e <= s) back("A hora de fecho tem de ser depois da abertura.", "horario", true);
-    await db.insert(schema.businessHours).values({ weekday: w, open, startMin: s, endMin: e })
-      .onConflictDoUpdate({ target: schema.businessHours.weekday, set: { open, startMin: s, endMin: e } });
-  }
-  done(); back("Horário guardado.", "horario");
-}
 
-export async function closedDay(fd: FormData) {
-  await requireAdmin();
-  const id = String(fd.get("id") || "");
-  if (id) await db.delete(schema.closedDays).where(eq(schema.closedDays.id, id));
-  else {
-    const date = String(fd.get("date"));
-    if (!isValidDateKey(date)) back("Escolha um dia.", "horario", true);
-    await db.insert(schema.closedDays).values({ date, label: str(fd, "label", 60) || "Fechado" }).onConflictDoNothing();
-  }
-  done(); back("Dias fechados atualizados.", "horario");
-}
 
 export async function review(fd: FormData) {
   await requireAdmin();
-  const id = String(fd.get("id") || ""), action = String(fd.get("action") || "add");
+  const id = String(fd.get("id") || ""), action = String(fd.get("op") || "add");
   if (action === "delete") await db.delete(schema.reviews).where(eq(schema.reviews.id, id));
   else if (action === "toggle") await db.update(schema.reviews).set({ visible: sql`not ${schema.reviews.visible}` }).where(eq(schema.reviews.id, id));
-  else {
-    const name = str(fd, "name", 40), text = str(fd, "text", 400);
-    if (!name || !text) back("Preencha o nome e a opinião.", "opinioes", true);
-    const date = String(fd.get("date") || "");
-    await db.insert(schema.reviews).values({ name, city: str(fd, "city", 40), text, date: isValidDateKey(date) ? new Date(date + "T12:00:00Z") : new Date() });
-  }
-  done(); back("Opiniões atualizadas.", "opinioes");
+  done(); back("Feedbacks atualizados.", "opinioes");
 }

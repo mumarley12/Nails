@@ -7,6 +7,10 @@ import { getSettings } from "@/lib/settings";
 import { waNumber } from "@/lib/phone";
 import { Card, Empty, PageHead, StatusPill } from "@/components/admin/ui";
 import { IconWhatsApp } from "@/components/icons";
+import { and, eq, gte, lt } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { addDays } from "@/lib/time";
+import { weekRules } from "@/lib/vagas";
 
 export const metadata = { title: "Visão geral" };
 
@@ -18,11 +22,26 @@ export default async function Page() {
   const hello = hour < 13 ? "Bom dia" : hour < 20 ? "Boa tarde" : "Boa noite";
   const wd = weekdayOf(today);
   const next = d.upcoming[0];
+  const rules = weekRules(today);
+  const pendingFeedback = (await db.select({ id: schema.reviews.id }).from(schema.reviews).where(eq(schema.reviews.visible, false))).length;
+  const nextWeekVagas = rules.nextIsOpen ? (await db.select({ id: schema.vagas.id }).from(schema.vagas).where(and(gte(schema.vagas.date, rules.nextWeek), lt(schema.vagas.date, addDays(rules.nextWeek, 7)))).limit(1)).length : 1;
 
   return (
     <div className="flex flex-col gap-6">
       <PageHead eyebrow={longDate(today).toUpperCase()} title={`${hello}, ${admin.name.split(" ")[0]}`}
         actions={<><Link href="/admin/agenda" className="btn-outline h-11 px-4">Ver agenda</Link><Link href="/admin/marcacoes/nova" className="btn-primary h-11 px-4">+ Nova marcação</Link></>} />
+
+      {nextWeekVagas === 0 && (
+        <Link href={`/admin/horario?semana=${rules.nextWeek}`} className="flex items-center justify-between gap-3 rounded-card border border-[#E3D3B8] bg-[#F6EEDF] px-5 py-4 text-sm text-[#5C4320]">
+          <span><b>Já pode publicar as vagas da próxima semana.</b> As clientes só conseguem marcar depois de as publicar.</span><span className="font-bold underline">Publicar</span>
+        </Link>
+      )}
+
+      {pendingFeedback > 0 && (
+        <Link href="/admin/site#opinioes" className="flex items-center justify-between gap-3 rounded-card border border-line bg-white px-5 py-4 text-sm">
+          <span><b>{pendingFeedback === 1 ? "1 feedback novo" : `${pendingFeedback} feedbacks novos`}</b> à espera de ser publicado.</span><span className="font-bold underline">Ver</span>
+        </Link>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Marcações de hoje" value={String(d.live.length)} note={`${d.live.filter((a) => a.status === "COMPLETED").length} concluídas · faltam ${d.upcoming.length}`} />

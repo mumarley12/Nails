@@ -4,7 +4,7 @@
  * Dias da semana: 0 = segunda … 6 = domingo. Horas do dia em minutos (540 = 09:00).
  */
 import {
-  pgTable, pgEnum, text, integer, boolean, timestamp, primaryKey, index,
+  pgTable, pgEnum, text, integer, boolean, timestamp, primaryKey, index, uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -94,7 +94,17 @@ export const businessHours = pgTable("business_hours", {
   open: boolean("open").notNull().default(true),
   startMin: integer("start_min").notNull().default(540),
   endMin: integer("end_min").notNull().default(1140),
+  start2Min: integer("start2_min"),
+  end2Min: integer("end2_min"),
 });
+
+/** Vagas publicadas pela Matilde: cada linha é uma hora exata em que pode receber 1 cliente. */
+export const vagas = pgTable("vagas", {
+  id: id(),
+  date: text("date").notNull(), // AAAA-MM-DD (Lisboa)
+  startMin: integer("start_min").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("vagas_date_start_uq").on(t.date, t.startMin)]);
 
 export const closedDays = pgTable("closed_days", {
   id: id(),
@@ -156,6 +166,7 @@ export const reviews = pgTable("reviews", {
   name: text("name").notNull(),
   city: text("city").notNull().default(""),
   text: text("text").notNull(),
+  rating: integer("rating").notNull().default(5), // estrelas, 1 a 5
   date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
   visible: boolean("visible").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

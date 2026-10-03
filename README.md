@@ -2,10 +2,12 @@
 
 Site da Matilde (Luxe Nails, Agualva-Cacém), marcação online pensada para telemóvel e painel privado para gerir agenda, clientes, serviços, fotos e relatórios.
 
-- **Site público** (`/`): serviços, portefólio a passar sozinho, preços, opiniões, contactos e WhatsApp.
-- **Marcação online** (`/marcar`): serviço → dia → hora → dados. Sem criar conta.
+- **Site público** (`/`): horário semanal (vagas para tocar e marcar), serviços e preços, fotos das clientes e feedbacks com estrelas, tudo a passar sozinho.
+- **Marcação online** (`/marcar`): serviço → dia → vaga → dados. Sem criar conta. Só aparecem as vagas publicadas.
 - **Link privado da cliente** (`/m/…`): ver, remarcar, cancelar e adicionar ao calendário.
-- **Painel** (`/admin`): visão geral, agenda (dia/semana), marcações, clientes, serviços e preços, “O Meu Site” (logótipo, fotos, contactos, horário, opiniões), notificações e relatórios.
+- **Painel** (`/admin`): visão geral, agenda, marcações, clientes, **horário semanal** (a Matilde escreve as horas exatas de cada dia; cada hora é 1 vaga), serviços e preços, “O Meu Site” (logótipo, fotos, contactos, feedbacks para publicar), notificações e relatórios.
+- **Regras do horário:** só se publica semana a semana; a semana atual muda-se a qualquer momento; a próxima abre 2 dias antes (sábado). No painel pode marcar-se a qualquer hora.
+- **Feedbacks:** a cliente deixa nome, estrelas (1 a 5) e texto; só aparece no site depois de a Matilde carregar em «Publicar». Vêm 3 cartões «Exemplo» para apagar quando houver feedbacks reais.
 - **Avisos**: email para a cliente (confirmação + lembrete na véspera), email e notificação no telemóvel para a Matilde a cada marcação nova. **SMS em pausa** (pode ligar mais tarde).
 
 Tudo em português de Portugal, preços em euros, fuso horário de Lisboa.
