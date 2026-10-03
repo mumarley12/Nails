@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
@@ -9,7 +9,7 @@ import { parseHHMM } from "@/lib/time";
 import { saveImage } from "@/lib/upload";
 
 const back = (msg: string, err = false) => redirect(`/admin/servicos?${err ? "erro" : "ok"}=${encodeURIComponent(msg)}`);
-const done = () => { revalidatePath("/admin/servicos"); revalidatePath("/"); };
+const done = () => { revalidateTag("public"); revalidatePath("/admin/servicos"); revalidatePath("/"); };
 
 export async function saveService(fd: FormData) {
   await requireAdmin();

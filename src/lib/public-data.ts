@@ -1,5 +1,6 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { db, schema } from "@/db";
 import { getSettings } from "./settings";
 
@@ -14,4 +15,6 @@ export async function getPublicData() {
   ]);
   return { settings, services, staff, gallery, reviews, hours };
 }
+/** Igual a getPublicData, mas guardado em cache 5 min (o painel limpa a cache ao gravar). Datas voltam como texto. */
+export const getPublicDataCached = unstable_cache(getPublicData, ["public-data-v1"], { tags: ["public"], revalidate: 300 });
 export type PublicData = Awaited<ReturnType<typeof getPublicData>>;

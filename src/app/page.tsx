@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPublicData } from "@/lib/public-data";
+import { getPublicDataCached } from "@/lib/public-data";
 import { euro } from "@/lib/money";
 import { hhmm, DIAS, shortDate, dateKey } from "@/lib/time";
 import { waNumber } from "@/lib/phone";
@@ -11,7 +11,7 @@ import { Testimonials } from "@/components/site/Testimonials";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { settings: s, services, gallery, reviews, hours } = await getPublicData();
+  const { settings: s, services, gallery, reviews, hours } = await getPublicDataCached();
   const main = services.filter((x) => !x.isAddOn);
   const addOns = services.filter((x) => x.isAddOn);
   const wa = `https://wa.me/${waNumber(s.whatsapp)}?text=${encodeURIComponent("Olá Matilde! Tenho uma dúvida sobre uma marcação.")}`;
@@ -119,7 +119,7 @@ export default async function Home() {
           <section id="opinioes" className="scroll-mt-20 px-5 py-16 md:px-12 md:py-24">
             <div className="mx-auto max-w-[900px]">
               <p className="mb-6 text-[11px] uppercase tracking-[0.3em] text-night-muted">Clientes</p>
-              <Testimonials items={reviews.map((r) => ({ id: r.id, name: r.name, city: r.city, text: r.text, when: shortDate(dateKey(r.date)) }))} />
+              <Testimonials items={reviews.map((r) => ({ id: r.id, name: r.name, city: r.city, text: r.text, when: shortDate(dateKey(new Date(r.date))) }))} />
             </div>
           </section>
         )}

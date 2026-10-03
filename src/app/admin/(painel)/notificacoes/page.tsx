@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { requireAdmin } from "@/lib/auth";
@@ -22,6 +22,7 @@ async function save(fd: FormData) {
     alertByEmail: fd.get("alertByEmail") === "on", alertByPush: fd.get("alertByPush") === "on",
     alertEmail: String(fd.get("alertEmail") ?? "").trim().slice(0, 120),
   }).where(eq(schema.siteSettings.id, 1));
+  revalidateTag("public");
   revalidatePath("/");
   redirect("/admin/notificacoes?ok=" + encodeURIComponent("Guardado."));
 }

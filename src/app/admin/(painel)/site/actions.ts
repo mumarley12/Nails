@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { asc, eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
@@ -9,7 +9,7 @@ import { saveImage } from "@/lib/upload";
 import { isValidDateKey, parseHHMM } from "@/lib/time";
 
 const back = (msg: string, anchor = "", err = false) => redirect(`/admin/site?${err ? "erro" : "ok"}=${encodeURIComponent(msg)}${anchor ? "#" + anchor : ""}`);
-const done = () => { revalidatePath("/"); revalidatePath("/admin/site"); };
+const done = () => { revalidateTag("public"); revalidatePath("/"); revalidatePath("/admin/site"); };
 const str = (fd: FormData, k: string, max = 200) => String(fd.get(k) ?? "").trim().slice(0, max);
 
 export async function saveInfo(fd: FormData) {
