@@ -1,4 +1,5 @@
 export function euro(cents: number, opts: { plus?: boolean } = {}): string {
+  if (cents === 0) return "sob consulta";
   const v = cents / 100;
   const s = Number.isInteger(v) ? String(v) : v.toFixed(2).replace(".", ",");
   return `${opts.plus ? "+" : ""}${s} €`;

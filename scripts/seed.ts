@@ -18,32 +18,30 @@ await db.insert(schema.closedDays).values([
   { date: "2026-12-25", label: "Natal" },
 ]).onConflictDoNothing();
 
-const [sara, marta, ines] = await db.insert(schema.staff).values([
-  { name: "Sara Lopes", role: "Proprietária · Técnica sénior", tags: ["Gel", "Nail art", "Extensões"], workDays: [1, 2, 3, 4, 5], startMin: 540, endMin: 1080, sortOrder: 1 },
-  { name: "Marta Costa", role: "Técnica", tags: ["Pedicure", "Cromados", "Gel"], workDays: [0, 2, 3, 4, 5], startMin: 540, endMin: 1020, sortOrder: 2 },
-  { name: "Inês Tavares", role: "Técnica", tags: ["Acrílico", "Extensões", "Nail art"], workDays: [0, 1, 3, 4, 5], startMin: 570, endMin: 1140, sortOrder: 3 },
+const [matilde] = await db.insert(schema.staff).values([
+  { name: "Matilde", role: "Nail designer", tags: ["Gel", "Francesinha", "Nail art", "Pés"], workDays: [1, 2, 3, 4, 5, 6], startMin: 540, endMin: 1140, sortOrder: 1 },
 ]).returning();
 
+// Preços a 0 aparecem como "sob consulta" até a Matilde os pôr no painel.
 const svc = await db.insert(schema.services).values([
-  { name: "Manicure Clássica", description: "Forma, cutículas e verniz normal", category: "Manicure", priceCents: 1500, durationMin: 45, sortOrder: 1 },
-  { name: "Manicure com Gel", description: "Verniz gel, dura 2–3 semanas", category: "Manicure", priceCents: 2500, durationMin: 60, sortOrder: 2 },
-  { name: "Pedicure Spa", description: "Banho, esfoliação, massagem e verniz", category: "Pedicure", priceCents: 2500, durationMin: 60, sortOrder: 3 },
-  { name: "Pedicure com Gel", description: "Pedicure spa com acabamento em gel", category: "Pedicure", priceCents: 3200, durationMin: 75, sortOrder: 4 },
-  { name: "Extensões de Gel", description: "Tips de gel, qualquer formato", category: "Extensões", priceCents: 4500, durationMin: 90, sortOrder: 5 },
-  { name: "Unhas de Acrílico", description: "Comprimento e resistência duradouros", category: "Extensões", priceCents: 4000, durationMin: 90, sortOrder: 6 },
-  { name: "Nail Art", description: "Detalhes, linhas ou flores", category: "Extra", priceCents: 500, durationMin: 20, isAddOn: true, sortOrder: 7 },
+  { name: "Gelinho", description: "Verniz gel na unha natural", category: "Mãos", priceCents: 0, durationMin: 60, sortOrder: 1 },
+  { name: "Extensão em gel", description: "Comprimento e formato à escolha", category: "Mãos", priceCents: 0, durationMin: 120, sortOrder: 2 },
+  { name: "Manutenção", description: "3 a 4 semanas depois da extensão", category: "Mãos", priceCents: 0, durationMin: 90, sortOrder: 3 },
+  { name: "Pés em gel", description: "Cutículas e verniz gel", category: "Pés", priceCents: 0, durationMin: 60, sortOrder: 4 },
+  { name: "Nail art", description: "Francesinha, flores 3D, dourados, desenhos", category: "Extra", priceCents: 0, durationMin: 20, isAddOn: true, sortOrder: 5 },
 ]).returning();
-const who: Record<string, string[]> = {
-  "Manicure Clássica": [sara.id, marta.id], "Manicure com Gel": [sara.id, marta.id, ines.id], "Pedicure Spa": [marta.id, ines.id],
-  "Pedicure com Gel": [marta.id], "Extensões de Gel": [sara.id, ines.id], "Unhas de Acrílico": [ines.id], "Nail Art": [sara.id, ines.id],
-};
-await db.insert(schema.serviceStaff).values(svc.flatMap((s) => (who[s.name] ?? []).map((staffId) => ({ serviceId: s.id, staffId }))));
+await db.insert(schema.serviceStaff).values(svc.map((s) => ({ serviceId: s.id, staffId: matilde.id })));
 
-await db.insert(schema.reviews).values([
-  { name: "Joana M.", city: "Lisboa", text: "O salão mais limpo onde já estive, e o meu gel durou quase quatro semanas.", date: new Date("2026-08-14") },
-  { name: "Sofia T.", city: "Cascais", text: "Marquei pelo telemóvel na hora de almoço. Super prático.", date: new Date("2026-08-29") },
-  { name: "Beatriz R.", city: "Porto", text: "Unhas cromadas lindíssimas para o casamento da minha irmã. Calmas, sem pressas, e ouvem mesmo.", date: new Date("2026-09-06") },
-]);
+// Galeria inicial com fotos do Instagram (@luxenailsbymvn). Opiniões: só reais, postas no painel.
+await db.insert(schema.galleryPhotos).values(
+  ["01", "09", "04", "05", "12", "02", "11", "06", "10", "03", "08", "07"].map((n, i) => ({ url: `/fotos/luxe-${n}.jpg`, label: "", alt: "Unhas feitas pela Matilde", sortOrder: i + 1 })),
+);
+await db.update(schema.siteSettings).set({
+  salonName: "Luxe Nails by MVN", address: "", postalCode: "", city: "Agualva-Cacém", phone: "937 142 531", whatsapp: "937 142 531",
+  email: "", instagram: "@luxenailsbymvn", tiktok: "@luxenailsbymvn", heroTitle: "Detalhe", heroTitleAccent: "é tudo.",
+  heroSubtitle: "Francesinha, leitosos, dourados e flores 3D — feitos por mim, um par de mãos de cada vez.", aboutText: "",
+  promoActive: false, heroPhotoUrl: "/fotos/luxe-05.jpg", aboutPhotoUrl: "/fotos/luxe-07.jpg",
+});
 
 return true;
 }

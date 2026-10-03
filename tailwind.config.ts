@@ -6,7 +6,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: { DEFAULT: "#A9A9A9", text: "#6B6B6B", light: "#EDEDED", soft: "#F7F7F7" },
+        brand: { DEFAULT: "#D4B27A", text: "#8A6532", light: "#F1E8DA", soft: "#FAF6F0" },
+        night: { DEFAULT: "#131010", raised: "#1C1817", line: "#2E2724", muted: "#A3968C" },
+        cream: { DEFAULT: "#EFE8E1", soft: "#DCD2C8" },
         ink: { DEFAULT: "#161616", muted: "#666666", soft: "#5C5C5C" },
         line: "#E8E8E8",
         ok: { bg: "#E8F3EC", fg: "#2F6B45" },
@@ -18,7 +20,7 @@ export default {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       borderRadius: { btn: "2px", card: "4px" },
-      letterSpacing: { label: "0.14em", eyebrow: "0.22em" },
+      letterSpacing: { label: "0.14em", eyebrow: "0.3em" },
       maxWidth: { page: "1312px" },
     },
   },

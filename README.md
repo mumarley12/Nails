@@ -1,8 +1,8 @@
-# Polish & Glow — site, marcações online e painel
+# Luxe Nails by MVN — site, marcações online e painel
 
-Site do salão, marcação online pensada para telemóvel e painel privado para gerir agenda, clientes, serviços, equipa, fotos e relatórios.
+Site da Matilde (Luxe Nails, Agualva-Cacém), marcação online pensada para telemóvel e painel privado para gerir agenda, clientes, serviços, equipa, fotos e relatórios.
 
-- **Site público** (`/`): serviços, galeria a passar sozinha, opiniões, contactos e WhatsApp.
+- **Site público** (`/`): serviços, portefólio a passar sozinho, preços, opiniões, contactos e WhatsApp.
 - **Marcação online** (`/marcar`): serviço → técnica → dia → hora → dados. Sem criar conta.
 - **Link privado da cliente** (`/m/…`): ver, remarcar, cancelar e adicionar ao calendário.
 - **Painel** (`/admin`): visão geral, agenda (dia/semana), marcações, clientes, serviços e equipa, “O Meu Site” (logótipo, fotos, contactos, horário, opiniões), notificações e relatórios.

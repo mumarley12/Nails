@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { Photo } from "./Photo";
 
-type Item = { id: string; url: string | null; label: string; alt: string; tone?: string };
+type Item = { id: string; url: string | null; label: string; alt: string };
 
 /** Fotos a passar sozinhas, devagar; a cliente pode arrastar com o dedo e o movimento espera por ela. */
 export function Gallery({ items }: { items: Item[] }) {
@@ -17,7 +17,7 @@ export function Gallery({ items }: { items: Item[] }) {
       const g = ref.current, s = st.current;
       if (g && !s.hold) {
         const half = g.scrollWidth / 2;
-        s.pos += 0.5;
+        s.pos += 0.45;
         if (half > 0 && s.pos >= half) s.pos -= half;
         s.auto = true;
         g.scrollLeft = s.pos;
@@ -40,15 +40,15 @@ export function Gallery({ items }: { items: Item[] }) {
     s.pos = g.scrollLeft;
   };
 
-  if (!items.length) return <p className="text-center text-sm text-ink-muted">Em breve, fotos dos nossos trabalhos.</p>;
+  if (!items.length) return null;
   return (
     <div ref={ref} onMouseEnter={hold} onMouseLeave={go} onTouchStart={hold} onTouchEnd={goLater} onScroll={onScroll}
-      tabIndex={0} aria-label="Galeria de trabalhos — deslize para ver mais" className="overflow-x-auto overflow-y-hidden no-scrollbar -mx-4 md:-mx-16">
+      tabIndex={0} aria-label="Portefólio — deslize para ver mais" className="no-scrollbar overflow-x-auto overflow-y-hidden">
       <div className="flex w-max">
         {loop.map((g, i) => (
-          <figure key={g.id + i} aria-hidden={i >= items.length} className="relative m-0 mr-2.5 md:mr-3 h-[146px] w-[146px] md:h-[230px] md:w-[230px] shrink-0 overflow-hidden rounded-[3px]">
-            <Photo src={g.url} alt={g.alt || g.label} label={g.url ? undefined : g.label} tone={g.tone} className="h-full w-full" />
-            {g.url && g.label && <figcaption className="absolute bottom-2 left-2 rounded-btn bg-white/80 px-2 py-1 text-[10px] font-bold tracking-[0.12em] text-[#363636]">{g.label}</figcaption>}
+          <figure key={g.id + i} aria-hidden={i >= items.length} className={`relative m-0 mr-2 shrink-0 overflow-hidden md:mr-3 ${i % 3 === 0 ? "h-[300px] w-[225px] md:h-[440px] md:w-[330px]" : "h-[300px] w-[180px] md:h-[440px] md:w-[264px]"}`}>
+            <Photo src={g.url} alt={g.alt || g.label || "Trabalho de unhas"} className="h-full w-full" />
+            {g.url && g.label && <figcaption className="absolute bottom-3 left-3 text-[10px] uppercase tracking-[0.24em] text-cream drop-shadow">{g.label}</figcaption>}
           </figure>
         ))}
       </div>

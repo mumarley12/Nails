@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const m = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+await m.goto('http://localhost:3100/', { waitUntil: 'networkidle' });
+await m.addStyleTag({content:'*{animation:none!important}'});
+await m.screenshot({ path: process.argv[2]+'/m.png', fullPage: true });
+const d = await b.newPage({ viewport: { width: 1440, height: 900 } });
+await d.goto('http://localhost:3100/', { waitUntil: 'networkidle' });
+await d.screenshot({ path: process.argv[2]+'/d.png', fullPage: true });
+const k = await b.newPage({ viewport: { width: 390, height: 844 } });
+await k.goto('http://localhost:3100/marcar', { waitUntil: 'networkidle' });
+await k.screenshot({ path: process.argv[2]+'/k.png' });
+await b.close();

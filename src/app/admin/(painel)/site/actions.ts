@@ -16,8 +16,8 @@ export async function saveInfo(fd: FormData) {
   await requireAdmin();
   await getSettings();
   await db.update(schema.siteSettings).set({
-    salonName: str(fd, "salonName", 60) || "Polish & Glow", address: str(fd, "address"), postalCode: str(fd, "postalCode", 12), city: str(fd, "city", 60),
-    phone: str(fd, "phone", 20), whatsapp: str(fd, "whatsapp", 20), email: str(fd, "email", 120), instagram: str(fd, "instagram", 60),
+    salonName: str(fd, "salonName", 60) || "Luxe Nails by MVN", address: str(fd, "address"), postalCode: str(fd, "postalCode", 12), city: str(fd, "city", 60),
+    phone: str(fd, "phone", 20), whatsapp: str(fd, "whatsapp", 20), email: str(fd, "email", 120), instagram: str(fd, "instagram", 60), tiktok: str(fd, "tiktok", 60),
   }).where(eq(schema.siteSettings.id, 1));
   done(); back("Contactos guardados.", "contactos");
 }

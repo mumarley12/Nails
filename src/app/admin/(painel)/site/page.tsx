@@ -89,7 +89,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Contactos e morada">
           <form id="contactos" action={saveInfo} className="grid gap-3.5 p-5 sm:grid-cols-2">
-            {([["salonName", "Nome do salão", s.salonName], ["phone", "Telefone", s.phone], ["address", "Morada", s.address], ["whatsapp", "WhatsApp", s.whatsapp], ["postalCode", "Código postal", s.postalCode], ["city", "Localidade", s.city], ["email", "Email", s.email], ["instagram", "Instagram", s.instagram]] as const).map(([k, l, v]) => (
+            {([["salonName", "Nome do salão", s.salonName], ["phone", "Telefone", s.phone], ["address", "Morada", s.address], ["whatsapp", "WhatsApp", s.whatsapp], ["postalCode", "Código postal", s.postalCode], ["city", "Localidade", s.city], ["email", "Email", s.email], ["instagram", "Instagram", s.instagram], ["tiktok", "TikTok", s.tiktok]] as const).map(([k, l, v]) => (
               <div key={k}><label className="label" htmlFor={`i-${k}`}>{l}</label><input id={`i-${k}`} name={k} defaultValue={v} className="field" /></div>
             ))}
             <p className="text-xs text-ink-muted sm:col-span-2">O número do WhatsApp é o que o botão “Falar no WhatsApp” do site usa.</p>
@@ -165,7 +165,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           <form action={review} className="mt-4 grid gap-3 rounded-card bg-brand-soft p-4 sm:grid-cols-3">
             <input type="hidden" name="action" value="add" />
             <div><label className="label" htmlFor="r-name">Nome</label><input id="r-name" name="name" placeholder="ex.: Ana P." className="field" required /></div>
-            <div><label className="label" htmlFor="r-city">Localidade</label><input id="r-city" name="city" placeholder="ex.: Lisboa" className="field" /></div>
+            <div><label className="label" htmlFor="r-city">Localidade</label><input id="r-city" name="city" placeholder="ex.: Cacém" className="field" /></div>
             <div><label className="label" htmlFor="r-date">Data</label><input id="r-date" name="date" type="date" defaultValue={dateKey(new Date())} className="field" /></div>
             <div className="sm:col-span-3"><label className="label" htmlFor="r-text">O que a cliente disse</label><textarea id="r-text" name="text" rows={2} className="field h-auto py-2" required /></div>
             <div className="sm:col-span-3"><SubmitButton className="btn-primary h-11 px-6">Adicionar opinião</SubmitButton></div>

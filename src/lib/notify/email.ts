@@ -5,7 +5,7 @@ export type EmailResult = { ok: true } | { ok: false; error: string; skipped?: b
 /** Envia um email pela API da Resend. Sem RESEND_API_KEY, só escreve nos registos (útil em testes). */
 export async function sendEmail(to: string, subject: string, html: string, text: string): Promise<EmailResult> {
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM || "Polish & Glow <onboarding@resend.dev>";
+  const from = process.env.EMAIL_FROM || "Luxe Nails <onboarding@resend.dev>";
   if (!key) {
     console.info(`[email desligado] Para: ${to} · ${subject}\n${text}`);
     return { ok: false, error: "RESEND_API_KEY em falta", skipped: true };

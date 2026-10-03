@@ -1,6 +1,6 @@
 // Service worker do painel: mostra os avisos de novas marcações.
 self.addEventListener("push", (event) => {
-  let data = { title: "Polish & Glow", body: "", url: "/admin" };
+  let data = { title: "Luxe Nails", body: "", url: "/admin" };
   try { data = { ...data, ...event.data.json() }; } catch (e) {}
   event.waitUntil(self.registration.showNotification(data.title, {
     body: data.body, icon: "/icon-192.png", badge: "/icon-192.png", data: { url: data.url }, tag: data.url,

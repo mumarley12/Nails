@@ -8,7 +8,7 @@ function setup(): boolean {
   if (configured) return true;
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY, priv = process.env.VAPID_PRIVATE_KEY;
   if (!pub || !priv) return false;
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:ola@polishandglow.pt", pub, priv);
+  webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:mumarley12@gmail.com", pub, priv);
   configured = true;
   return true;
 }

@@ -33,7 +33,7 @@ async function test(fd: FormData) {
     const r = await pushToAdmins({ title: "Teste", body: "Os avisos de novas marcações estão a funcionar.", url: "/admin" });
     redirect("/admin/notificacoes?" + (r.sent ? "ok=" + encodeURIComponent(`Aviso enviado para ${r.sent} aparelho(s).`) : "erro=" + encodeURIComponent(r.error ?? "Nenhum aparelho com avisos ativos.")));
   }
-  const r = await sendEmail(s.alertEmail, "Teste de email — Polish & Glow", "<p>Os emails estão a funcionar.</p>", "Os emails estão a funcionar.");
+  const r = await sendEmail(s.alertEmail, "Teste de email — Luxe Nails", "<p>Os emails estão a funcionar.</p>", "Os emails estão a funcionar.");
   redirect("/admin/notificacoes?" + (r.ok ? "ok=" + encodeURIComponent(`Email enviado para ${s.alertEmail}.`) : "erro=" + encodeURIComponent(r.error)));
 }
 

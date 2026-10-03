@@ -29,7 +29,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   return (
     <main className="grid min-h-dvh place-items-center bg-brand-soft px-5">
       <form action={login} className="card w-full max-w-sm p-7">
-        <p className="font-serif text-2xl">Polish <em className="text-brand-text">&amp;</em> Glow</p>
+        <p className="font-serif text-2xl">Luxe <em className="text-brand-text">Nails</em></p>
         <p className="mt-1 text-[10px] font-bold tracking-[0.3em] text-[#8A8A8A]">PAINEL DO SALÃO</p>
         <h1 className="mt-6 font-serif text-[26px] font-medium">Entrar</h1>
         {erro && <p role="alert" className="mt-3 rounded-card bg-bad-bg px-3 py-2.5 text-sm text-bad-fg">{erro === "muitas" ? "Demasiadas tentativas. Espere 15 minutos." : "Email ou password incorretos."}</p>}

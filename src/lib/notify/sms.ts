@@ -1,10 +1,10 @@
 import "server-only";
 /**
  * SMS via Twilio — EM PAUSA. Só envia quando "SMS" estiver ligado no painel E as variáveis TWILIO_* existirem.
- * Usa a API REST diretamente (sem SDK) e um nome de remetente (ex.: "PolishGlow"), sem número.
+ * Usa a API REST diretamente (sem SDK) e um nome de remetente (ex.: "LuxeNails"), sem número.
  */
 export async function sendSms(to: string, body: string): Promise<{ ok: boolean; error?: string; skipped?: boolean }> {
-  const sid = process.env.TWILIO_ACCOUNT_SID, token = process.env.TWILIO_AUTH_TOKEN, from = process.env.TWILIO_SENDER_ID || "PolishGlow";
+  const sid = process.env.TWILIO_ACCOUNT_SID, token = process.env.TWILIO_AUTH_TOKEN, from = process.env.TWILIO_SENDER_ID || "LuxeNails";
   if (!sid || !token) return { ok: false, skipped: true, error: "Twilio não configurado" };
   const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
     method: "POST",
