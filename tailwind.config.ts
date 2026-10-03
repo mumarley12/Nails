@@ -1,0 +1,26 @@
+import type { Config } from "tailwindcss";
+
+// Design tokens — mudar aqui muda o site e o painel ao mesmo tempo.
+export default {
+  content: ["./src/**/*.{ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        brand: { DEFAULT: "#A9A9A9", text: "#6B6B6B", light: "#EDEDED", soft: "#F7F7F7" },
+        ink: { DEFAULT: "#161616", muted: "#666666", soft: "#5C5C5C" },
+        line: "#E8E8E8",
+        ok: { bg: "#E8F3EC", fg: "#2F6B45" },
+        warn: { bg: "#FBEFD9", fg: "#7A4B00" },
+        bad: { bg: "#F9E1E4", fg: "#A3283F" },
+      },
+      fontFamily: {
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+      },
+      borderRadius: { btn: "2px", card: "4px" },
+      letterSpacing: { label: "0.14em", eyebrow: "0.22em" },
+      maxWidth: { page: "1312px" },
+    },
+  },
+  plugins: [],
+} satisfies Config;
