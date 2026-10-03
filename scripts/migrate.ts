@@ -1,7 +1,7 @@
 /**
  * Prepara a base de dados: aplica as migrações, cria os dados iniciais (se estiver vazia)
  * e o primeiro acesso ao painel a partir de ADMIN_EMAIL / ADMIN_PASSWORD (se ainda não houver nenhum).
- * Corre automaticamente em cada publicação na Vercel (script "vercel-build").
+ * Corre automaticamente em cada publicação na Netlify (ver netlify.toml).
  */
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";

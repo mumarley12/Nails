@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendTomorrowReminders } from "@/lib/notify";
 
-/** Lembretes por email das marcações de amanhã. Chamado pela Vercel Cron (ver vercel.json). */
+/** Lembretes por email das marcações de amanhã. Chamado pela função agendada da Netlify (netlify/functions/lembretes.mts). */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });

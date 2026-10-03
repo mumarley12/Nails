@@ -12,62 +12,43 @@ Tudo em português de Portugal, preços em euros, fuso horário de Lisboa.
 
 ---
 
-## Pôr o site online (passo a passo, sem programar)
+## Onde está alojado (tudo no plano grátis)
 
-Vai precisar de três contas **grátis**: [GitHub](https://github.com) (já tem), [Vercel](https://vercel.com) (onde o site corre) e [Supabase](https://supabase.com) (a base de dados). Para os emails, uma conta grátis na [Resend](https://resend.com).
+- **Site:** [Netlify](https://netlify.com) — projeto `polish-and-glow` (o plano grátis permite uso comercial). Publica sozinho sempre que há alterações no ramo `main` do GitHub.
+- **Base de dados:** [Supabase](https://supabase.com) — projeto `polish-and-glow` (Paris). O site liga-se com um utilizador próprio (`salon_app`) e as tabelas estão fechadas à API pública da Supabase.
+- **Fotos:** Netlify Blobs (automático, sem configuração).
+- **Lembretes na véspera:** função agendada da Netlify (`netlify/functions/lembretes.mts`), todos os dias às 17h UTC.
 
-### 1. Base de dados (Supabase)
-1. Entre em supabase.com › **New project**. Escolha uma região na Europa e guarde a password da base de dados.
-2. No projeto: **Connect** (botão no topo) › **Connection string**.
-3. Copie a ligação **Transaction pooler** (porta 6543) — será o `DATABASE_URL`.
-4. Copie a ligação **Session pooler** (porta 5432) — será o `DIRECT_URL`.
-5. Em ambas, troque `[YOUR-PASSWORD]` pela password do passo 1.
+Em cada publicação, o comando de build (`netlify.toml`) aplica as migrações, cria os dados de exemplo se a base estiver vazia e o primeiro acesso ao painel a partir de `ADMIN_EMAIL` + `ADMIN_PASSWORD`.
 
-### 2. Site (Vercel)
-1. Entre em vercel.com com a conta do GitHub › **Add New… › Project** › escolha o repositório **Nails** › **Import**.
-2. Antes de carregar em *Deploy*, abra **Environment Variables** e acrescente:
+### Variáveis de ambiente (Netlify › Project configuration › Environment variables)
 
-| Nome | O que pôr |
+| Nome | Para quê |
 |---|---|
-| `DATABASE_URL` | ligação *Transaction pooler* do Supabase |
-| `DIRECT_URL` | ligação *Session pooler* do Supabase |
-| `AUTH_SECRET` | uma frase longa e aleatória (32+ caracteres) |
-| `NEXT_PUBLIC_SITE_URL` | o endereço do site, ex.: `https://nails.vercel.app` (depois troca pelo domínio) |
-| `ADMIN_EMAIL` | o seu email para entrar no painel |
-| `ADMIN_NAME` | o seu nome |
-| `ADMIN_PASSWORD` | a password do painel (10+ caracteres) |
-| `CRON_SECRET` | outra frase secreta qualquer |
+| `DATABASE_URL` | ligação à Supabase pelo *transaction pooler* (porta 6543) |
+| `DIRECT_URL` | ligação à Supabase pelo *session pooler* (porta 5432), usada nas migrações |
+| `AUTH_SECRET` | assinatura da sessão do painel (32+ caracteres) |
+| `NEXT_PUBLIC_SITE_URL` | endereço público do site, sem barra no fim |
+| `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | primeiro acesso ao painel (password com 10+ caracteres) |
+| `CRON_SECRET` | protege o envio dos lembretes |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | avisos no telemóvel da equipa |
+| `RESEND_API_KEY` / `EMAIL_FROM` | emails (opcional até configurar a [Resend](https://resend.com)) |
 
-3. Carregue em **Deploy**. Na primeira publicação o sistema cria sozinho as tabelas, os serviços e equipa de exemplo, e o seu acesso ao painel.
-4. Abra `o-seu-site/admin`, entre com o email e a password, e mude tudo em **O Meu Site** e **Serviços e Equipa**.
+### Avisos no telemóvel da manicure
+- **iPhone**: Safari › Partilhar › “Adicionar ao ecrã principal”. Abra o painel pelo ícone novo.
+- **Android**: Chrome › menu › “Instalar app”.
+- Depois: painel › **Notificações** › “Ativar avisos neste aparelho” › “Testar aviso”.
 
-### 3. Fotos (Vercel Blob)
-1. No projeto da Vercel: **Storage › Create › Blob** › ligue-o ao projeto.
-2. Isto acrescenta `BLOB_READ_WRITE_TOKEN` automaticamente. Vá a **Deployments › ⋯ › Redeploy**.
+### Domínio próprio (opcional)
+Netlify › **Domain management** › acrescente o domínio e siga as instruções. Depois atualize `NEXT_PUBLIC_SITE_URL` e publique de novo.
 
-### 4. Emails (Resend)
-1. Crie conta em resend.com › **Domains** › adicione o seu domínio e siga as instruções (ou use o endereço de testes deles enquanto não tiver domínio).
-2. **API Keys › Create** › copie a chave.
-3. Na Vercel acrescente `RESEND_API_KEY` (a chave) e `EMAIL_FROM` (ex.: `Polish & Glow <ola@polishandglow.pt>`) › Redeploy.
-4. No painel › **Notificações** › “Testar email”.
-
-### 5. Avisos no telemóvel da manicure
-1. Acrescente na Vercel `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT` (`mailto:o-seu-email`). As chaves geram-se com `npx web-push generate-vapid-keys`. Redeploy.
-2. No telemóvel, abra o painel:
-   - **iPhone**: Safari › Partilhar › “Adicionar ao ecrã principal”. Abra pelo ícone novo.
-   - **Android**: Chrome › menu › “Instalar app”.
-3. Painel › **Notificações** › “Ativar avisos neste aparelho” › “Testar aviso”.
-
-### 6. Domínio (opcional)
-Na Vercel › **Settings › Domains** › acrescente `polishandglow.pt` e siga as instruções. Depois atualize `NEXT_PUBLIC_SITE_URL` e faça Redeploy.
-
-### Lembretes na véspera
-Já estão configurados (`vercel.json`): todos os dias às 17h UTC (18h em Lisboa no inverno) o sistema envia o email de lembrete das marcações do dia seguinte.
+### Nota sobre a Supabase grátis
+Um projeto grátis é pausado após 1 semana sem atividade. Com marcações e o lembrete diário isso não deve acontecer; se acontecer, reative-o no painel da Supabase.
 
 ---
 
 ## Ligar os SMS mais tarde
-1. Crie conta na Twilio e acrescente `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` e `TWILIO_SENDER_ID` (ex.: `PolishGlow`) na Vercel.
+1. Crie conta na Twilio e acrescente `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` e `TWILIO_SENDER_ID` (ex.: `PolishGlow`) na Netlify.
 2. Ligue a opção `sms_enabled` (coluna da tabela `site_settings`). Os textos já estão prontos e sem acentos para caberem em 1 SMS.
 
 ---
@@ -83,9 +64,9 @@ npm test                     # testes da disponibilidade/horas
 npm run typecheck
 ```
 
-Sem `RESEND_API_KEY` os emails aparecem só nos registos; sem `BLOB_READ_WRITE_TOKEN` as fotos ficam em `public/uploads` (só em desenvolvimento).
+Sem `RESEND_API_KEY` os emails aparecem só nos registos; fora da Netlify as fotos ficam em `public/uploads` (só em desenvolvimento).
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Drizzle ORM · Resend (email) · Web Push · Vercel Blob · Twilio (SMS, em pausa).
+**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · PostgreSQL (Supabase) · Drizzle ORM · Resend (email) · Web Push · Netlify (site, Blobs, função agendada) · Twilio (SMS, em pausa).
 
 **Estrutura**
 ```
