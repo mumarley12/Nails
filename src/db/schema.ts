@@ -127,7 +127,7 @@ export const siteSettings = pgTable("site_settings", {
   postalCode: text("postal_code").notNull().default(""),
   city: text("city").notNull().default("Agualva-Cacém"),
   phone: text("phone").notNull().default("937 142 531"),
-  whatsapp: text("whatsapp").notNull().default("937 142 531"),
+  whatsapp: text("whatsapp").notNull().default("925 428 441"),
   email: text("email").notNull().default(""),
   instagram: text("instagram").notNull().default("@luxenailsbymvn"),
   tiktok: text("tiktok").notNull().default(""),

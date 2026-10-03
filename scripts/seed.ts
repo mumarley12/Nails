@@ -34,7 +34,7 @@ await db.insert(schema.galleryPhotos).values(
   ["01", "09", "04", "05", "12", "02", "11", "06", "10", "03", "08", "07"].map((n, i) => ({ url: `/fotos/luxe-${n}.jpg`, label: "", alt: "Unhas feitas pela Matilde", sortOrder: i + 1 })),
 );
 await db.update(schema.siteSettings).set({
-  salonName: "Luxe Nails by MVN", address: "", postalCode: "", city: "Agualva-Cacém", phone: "937 142 531", whatsapp: "937 142 531",
+  salonName: "Luxe Nails by MVN", address: "", postalCode: "", city: "Agualva-Cacém", phone: "937 142 531", whatsapp: "925 428 441",
   email: "", instagram: "@luxenailsbymvn", tiktok: "@luxenailsbymvn", heroTitle: "Detalhe", heroTitleAccent: "é tudo.",
   heroSubtitle: "Francesinha, leitosos, dourados e flores 3D — feitos por mim, um par de mãos de cada vez.", aboutText: "",
   promoActive: false, heroPhotoUrl: "/fotos/luxe-05.jpg", aboutPhotoUrl: "/fotos/luxe-07.jpg",
